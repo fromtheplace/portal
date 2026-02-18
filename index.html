@@ -108,7 +108,10 @@ body::before {
 .ch-card:focus-visible { outline: 2px solid var(--amber-dim); outline-offset: -2px; }
 
 /* THUMB AREA */
-.ch-thumb { position: relative; width: 100%; padding-top: 56.25%; background: #000; overflow: hidden; }
+.ch-thumb { scale: 0.9;
+  border: solid white 1px;
+  border-radius: 19px;
+           position: relative; width: 100%; padding-top: 56.25%; background: #000; overflow: hidden; }
 
 /* Static cover — visible at rest */
 .ch-thumb-static {
@@ -126,7 +129,7 @@ body::before {
 .ch-card:hover .ch-thumb-static     { opacity: 0; }
 
 /* fallback */
-.ch-thumb-fb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0c0a07 0%, #1a1610 100%); }
+.ch-thumb-fb { z-index: -50;   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0c0a07 0%, #1a1610 100%); }
 .ch-thumb-fb-num { font-family: var(--font-disp); font-size: 56px; color: var(--text-lo); letter-spacing: -3px; line-height: 1; }
 
 /* gradient over bottom of thumb */
