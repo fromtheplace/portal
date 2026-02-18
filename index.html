@@ -263,8 +263,11 @@ const CHANNELS = [
     featured: false,
     thumb:    null,           // e.g. 'images/ohhh-cover.jpg'
     thumbId:  'xX6NIpgr8WA',
-  nowPlaying: { type: 'ftpengine', playlist: null }, // filled after script loads
-  },
+    nowPlaying: {
+      type:    'fetchjs',
+      url:     'https://fromtheplace.github.io/ftptv/FTP_MEGA.js',
+      varName: 'videoPlaylist',
+    },
 ];
 
 // Wire CH1's local playlist (already available from FTP_MEGA.js <script> above)
