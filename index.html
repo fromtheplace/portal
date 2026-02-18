@@ -65,6 +65,31 @@ color: var(--text-lo);
     background-position: center;
     }
 /* MASTHEAD */
+
+
+.mast-logo-cell img {
+  height: 80px;
+  width: auto;
+  display: block;
+  filter: brightness(0.92) contrast(1.05);
+
+  /* Add animation */
+  animation: logoPulse 4s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06); /* subtle zoom */
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+  
 #masthead {
   position: sticky; top: 0; z-index: 100;
   display: flex; align-items: stretch;
