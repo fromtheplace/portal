@@ -43,17 +43,21 @@ body::before {
   pointer-events: none; z-index: 998;
 }
 .ch-card[data-ch-num="1"] .ch-thumb-fb-num {
+    background-image: url(images/ftptv.png);
+}
+  .ch-card[data-ch-num="2"] .ch-thumb-fb-num {
+    background-image: url(images/nooktv.png);
+}
+  .ch-thumb-fb-num {
 color: var(--text-lo);
     letter-spacing: -3px;
     line-height: 1;
     width: 80px;
     height: 80px;
-    background-image: url(images/ftptv.png);
-    background-size: contain;
+      background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    font-size: 0;
-}
+    font-size: 0;}
 /* MASTHEAD */
 #masthead {
   position: sticky; top: 0; z-index: 100;
