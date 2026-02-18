@@ -1,5 +1,5 @@
 var videoPlaylist = [
-
+{ id: 'owx2gYYmElA', start: 0, end: 449, title: 'SATSHIFT Live /MEGAZONE/ Sickboy' },
 	{ id: 'y4jkCeM_hDo', start: 1, end: 287, title: 'Rezzy Crooks - Swimming Pools (Cover) (Music for People)' },
 	{ id: 'xX6NIpgr8WA', start: 1, end: 990, title: 'Thanks - ŌHHH22 ' },
 	{ id: 'f8fhAe6YrTw', start: 1, end: 1696, title: 'Ferdishenko - WMFLive ' },
@@ -10,6 +10,7 @@ var videoPlaylist = [
 	{ id: '7HxENNQql38', start: 20040, end: 23475, title: 'SOMATECH - Space Concert' },
 	{ id: '6bk7ezTvfNs', start: 1, end: 943, title: 'ALXG - ŌHHH22 ' },
 	{ id: 'y3-LF-9y1Vw', start: 530, end: 805, title: 'Kylie Price - Get Older' },
+{ id: 'owx2gYYmElA', start: 484, end: 760, title: 'SATSHIFT Live /MEGAZONE/ Sickboy, Bubba44 ' },
 	{ id: '4SbVszlEw3Y', start: 1, end: 1773, title: 'King Homeboy - ŌHHH22 ' },
 	{ id: 'XqleQ6NP9oM', start: 2340, end: 2502, title: 'KOMMI - Ai Ana Kai Horetātā' },
 	{ id: 'SLsg2lt_wC8', start: 1, end: 153, title: 'Hystera - sONG 1' },
