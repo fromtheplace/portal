@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FROM THE PLACE — CH.01</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FTP">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-audio-playback-mode" content="background">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@400;700;900&family=DM+Sans:wght@300;400;500&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:         #080808;
+  --white:         #f5f0e8;
+  --channel-red:   #ff2b2b;
+  --channel-green: #0effc7;
+  --channel-pink:  #f65c95;
+  --amber:         #c8983a;
+  --crt-green:     #3dff7a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #000; color: var(--white); font-family: 'DM Sans', sans-serif; }
+body { transform: scale(0.9); border-radius: 40px; border: 1px solid #2d2d2d; }
+
+/* VIDEO LAYER — original */
+#player-wrap {
+  position: fixed;
+  top: -90px; left: 0; right: 0; bottom: -90px;
+  z-index: 1; background: #000; pointer-events: none;
+}
+#yt-player { width: 100%; height: 100%; }
+#yt-player iframe { filter: brightness(1.05) contrast(1.1) saturate(1.15) blur(0.3px); }
+#player-wrap::after {
+  content: ""; position: absolute; inset: 0;
+  background: inherit; filter: blur(8px) brightness(1.2); opacity: 0.15; mix-blend-mode: screen;
+}
+@keyframes chroma-drift {
+  0%,100% { filter: drop-shadow(0 0 1px rgba(255,0,0,0.25)) drop-shadow(1px 0 1px rgba(0,255,255,0.18)); }
+  50%      { filter: drop-shadow(-1px 0 rgba(255,0,0,0.3)) drop-shadow(1px 0 rgba(0,255,255,0.25)); }
+}
+@keyframes h-wobble {
+  0%   { transform: translateX(0); }   20%  { transform: translateX(-0.4px); }
+  40%  { transform: translateX(0.3px); } 60%  { transform: translateX(-0.2px); }
+  80%  { transform: translateX(0.4px); } 100% { transform: translateX(0); }
+}
+#player-wrap { animation: h-wobble 0.12s infinite linear, chroma-drift 6s ease-in-out infinite; }
+
+/* CRT OVERLAYS — original */
+#phosphor-mask {
+  position: fixed; inset: 0; z-index: 3; pointer-events: none;
+  background: repeating-linear-gradient(90deg, rgba(255,0,0,0.04) 0, rgba(255,0,0,0.04) 1px, transparent 1px, transparent 3px);
+  mix-blend-mode: overlay; opacity: 0.25;
+}
+#scanlines {
+  position: fixed; inset: 0; z-index: 2; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.09) 2px, rgba(0,0,0,0.09) 4px);
+  animation: flicker 8s ease-in-out infinite, beam 0.09s infinite;
+}
+@keyframes flicker { 0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.82} 94%{opacity:1} 97%{opacity:0.88} 98%{opacity:1} }
+@keyframes beam    { 0%,100%{opacity:1} 50%{opacity:0.96} }
+#crt-curvature {
+  position: fixed; inset: -3%; z-index: 4; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 58%, rgba(0,0,0,0.35) 72%, rgba(0,0,0,0.85) 100%);
+  transform: scale(1.04); border-radius: 2.5% / 3.5%;
+}
+#vignette {
+  position: fixed; inset: 0; z-index: 3; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%);
+}
+#static {
+  position: fixed; inset: 0; z-index: 19; pointer-events: none; opacity: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  background-size: 200px; mix-blend-mode: screen; transition: opacity 0.05s;
+}
+#static.flash { opacity: 0.18; }
+
+/* TUNE-IN GATE — original */
+#tune-in {
+  position: fixed; inset: 0; z-index: 50; background: #0a0a0a;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+  cursor: pointer; transition: opacity 0.6s ease;
+}
+#tune-in.hide { opacity: 0; pointer-events: none; }
+#tune-in .logotitle { margin-bottom: 2.4rem; animation: ti-breathe 3.5s ease-in-out infinite; }
+@keyframes ti-breathe { 0%,100%{opacity:0.8} 50%{opacity:1} }
+.ti-sub { font-family: 'Space Mono', monospace; font-size: clamp(7px,1vw,9px); letter-spacing: 0.45em; color: rgba(255,255,255,0.18); text-transform: uppercase; margin-bottom: 2.8rem; }
+.ti-cta { font-family: 'Space Mono', monospace; font-size: clamp(8px,1vw,10px); letter-spacing: 0.35em; color: rgba(255,255,255,0.38); text-transform: uppercase; border: 1px solid rgba(255,255,255,0.12); padding: 10px 24px; border-radius: 3px; animation: ti-blink 2.2s step-end infinite; }
+@keyframes ti-blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+/* CHANNEL BUMP — original */
+#bump {
+  position: fixed; inset: 0; z-index: 20; background: #000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+  opacity: 0; pointer-events: none; transition: opacity 1.4s ease;
+}
+#bump.show { opacity: 1; transition: opacity 0.05s ease; }
+.logotitle {
+  border: 2px solid rgba(255,255,255,0.5); width: fit-content; margin: 0 auto 2rem;
+  border-radius: 54px; padding: 3.4rem 3.4rem 4rem; line-height: 0.9;
+  font-family: 'DM Sans', sans-serif; font-weight: 400; font-size: clamp(28px,6vw,64px);
+  color: var(--white); text-align: center; letter-spacing: -0.02em;
+  background: rgba(16,16,16,0.9); transform: scale(0.6);
+}
+.logotitle strong { display: block; font-weight: 500; font-size: 1.5em; letter-spacing: -0.03em; }
+.bump-tag { font-family: 'Space Mono', monospace; font-size: clamp(7px,1vw,9px); letter-spacing: 0.4em; color: rgba(255,255,255,0.22); text-transform: uppercase; }
+
+/* TOP NAV — original */
+#nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10; height: 52px;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 22px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.92) 0%, transparent 100%);
+}
+.nav-logo {
+  width: 150px; height: 100px; margin-top: 3rem;
+  background-image: url("images/ftptv.png"); background-repeat: no-repeat;
+  background-position: center; background-size: contain;
+  font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 13px;
+  letter-spacing: 0.22em; color: var(--white); user-select: none;
+}
+.nav-logo em { font-style: normal; color: var(--channel-green); }
+.nav-right { display: flex; align-items: center; gap: 14px; }
+.live-pill { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid rgba(255,43,43,0.35); border-radius: 100px; background: rgba(255,43,43,0.1); }
+.live-dot  { width: 6px; height: 6px; background: var(--channel-red); border-radius: 50%; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,43,43,0.5)} 50%{opacity:0.6;box-shadow:0 0 0 5px rgba(255,43,43,0)} }
+.live-text { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.2em; color: var(--channel-red); text-transform: uppercase; }
+.nav-btn {
+  width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; cursor: pointer; color: rgba(255,255,255,0.6); font-size: 15px;
+  transition: all 0.15s; user-select: none;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.13); color: var(--white); }
+
+/* CHANNEL ID WATERMARK — original */
+#channel-id {
+  position: fixed; top: 60px; right: 22px; z-index: 10; pointer-events: none;
+  opacity: 0.18; font-family: 'Unbounded', sans-serif; font-weight: 900;
+  font-size: 11px; letter-spacing: 0.25em; color: var(--white); text-transform: uppercase;
+}
+
+/* LOWER THIRD — original */
+#lower-third { position: fixed; bottom: 70px; left: 0; z-index: 10; padding: 0 22px; pointer-events: none; }
+.lt-now { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.lt-now-dot { width: 4px; height: 4px; background: var(--channel-red); border-radius: 50%; animation: pg 1.4s ease-in-out infinite; }
+@keyframes pg { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.lt-now-label { font-family: 'Space Mono', monospace; font-size: 7px; letter-spacing: 0.3em; color: var(--channel-red); text-transform: uppercase; }
+.lt-artist    { font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: clamp(11px,1.4vw,15px); color: var(--white); letter-spacing: -0.01em; line-height: 1.15; text-shadow: 0 2px 12px rgba(0,0,0,0.8); }
+.lt-context   { font-family: 'DM Sans', sans-serif; font-size: clamp(9px,1vw,11px); font-weight: 300; color: rgba(255,255,255,0.5); margin-top: 1px; letter-spacing: 0.02em; }
+.lt-event-badge { display: none !important; margin-top: 4px; padding: 2px 6px; background: var(--channel-pink); color: #000; font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 7px; letter-spacing: 0.18em; text-transform: uppercase; border-radius: 3px; transform: rotate(-1.5deg); }
+
+/* CLIP BAR — original */
+#clip-bar-wrap { position: fixed; bottom: 64px; left: 0; right: 0; z-index: 10; height: 3px; background: rgba(255,255,255,0.07); pointer-events: none; }
+#clip-bar { height: 100%; background: var(--channel-green); width: 0%; box-shadow: 0 0 8px rgba(14,255,199,0.5); transition: width 0.5s linear; }
+
+/* CONTROLS — original */
+#controls {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 10; height: 64px;
+  display: flex; align-items: center; gap: 10px; padding: 0 18px;
+  background: rgba(0,0,0,0.05); border-top: 1px solid rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  -webkit-mask-image: radial-gradient(circle, #0000 0%, black 70%);
+  mask-image: radial-gradient(circle, #0000 0%, black 70%);
+}
+.ctrl-progress { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.prog-track    { position: relative; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: default; pointer-events: none; display: none; }
+.prog-fill     { height: 100%; background: rgba(14,255,199,0.7); border-radius: 2px; transition: width 0.5s linear; }
+.prog-times    { display: flex; justify-content: space-between; font-family: 'Space Mono', monospace; font-size: 8px; color: rgba(255,255,255,0.25); letter-spacing: 0.05em; }
+.vol-wrap      { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+.vol-slider    { -webkit-appearance: none; width: 72px; height: 3px; background: rgba(255,255,255,0.18); border-radius: 2px; outline: none; cursor: pointer; }
+.vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 11px; height: 11px; background: var(--white); border-radius: 50%; cursor: pointer; }
+
+/* ═══════════════════════════════════════════════════
+   CHANNEL SWITCHER — overlaid on player, z:15
+   Appears after tune-in. Tab on right edge.
+   Panel slides in from right. Does not interfere
+   with any original z-index layers (scanlines z:2,
+   crt z:4, static z:19, bump z:20, tune-in z:50).
+═══════════════════════════════════════════════════ */
+
+/* Tab: thin vertical strip on right edge, always reachable */
+#sw-tab {
+  position: fixed;
+  right: 0; top: 50%;
+  transform: translateY(-50%);
+  z-index: 15;
+  display: none; /* shown after tune-in */
+  writing-mode: vertical-rl;
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  letter-spacing: 0.25em;
+  color: rgba(200,152,58,0.45);
+  background: rgba(6,5,4,0.88);
+  border: 1px solid rgba(200,152,58,0.15);
+  border-right: none;
+  padding: 16px 7px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 3px 0 0 3px;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+#sw-tab:hover { color: var(--amber); background: rgba(14,11,8,0.96); border-color: rgba(200,152,58,0.3); }
+#sw-tab.open  { color: var(--amber); border-color: rgba(200,152,58,0.3); }
+
+/* Panel */
+#switcher {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 230px;
+  z-index: 15;
+  background: rgba(6,5,4,0.97);
+  border-left: 1px solid rgba(200,152,58,0.12);
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+#switcher::after {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px);
+}
+#switcher.open { transform: translateX(0); }
+#switcher > * { position: relative; z-index: 1; }
+
+/* Switcher header */
+.sw-head {
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.sw-head-label {
+  font-family: 'Space Mono', monospace; font-size: 8px;
+  letter-spacing: 0.38em; color: rgba(200,152,58,0.35); text-transform: uppercase;
+}
+.sw-close {
+  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.2); cursor: pointer; font-size: 13px; transition: color 0.15s;
+}
+.sw-close:hover { color: rgba(255,255,255,0.65); }
+
+/* Phosphor readout display */
+.sw-readout {
+  margin: 10px 14px 0;
+  background: #010302;
+  border: 1px solid rgba(61,255,122,0.1);
+  padding: 10px 12px;
+  position: relative; overflow: hidden;
+  flex-shrink: 0;
+}
+.sw-readout::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(61,255,122,0.022) 2px, rgba(61,255,122,0.022) 4px);
+  pointer-events: none;
+}
+.sw-readout-label {
+  font-family: 'VT323', monospace; font-size: 13px;
+  letter-spacing: 0.3em; color: rgba(61,255,122,0.3); text-transform: uppercase; margin-bottom: 2px;
+}
+.sw-readout-num {
+  font-family: 'VT323', monospace; font-size: 62px;
+  color: var(--crt-green); line-height: 0.92; letter-spacing: -2px;
+  text-shadow: 0 0 14px rgba(61,255,122,0.45), 0 0 36px rgba(61,255,122,0.12);
+}
+.sw-readout-num.pop { animation: rd-pop 0.1s ease; }
+@keyframes rd-pop { 0%{opacity:0.15;transform:scaleY(0.88)} 100%{opacity:1;transform:scaleY(1)} }
+.sw-readout-name {
+  font-family: 'Space Mono', monospace; font-size: 8px;
+  color: rgba(61,255,122,0.35); letter-spacing: 0.12em; text-transform: uppercase;
+  margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* CH +/- step */
+.sw-arrows {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: rgba(255,255,255,0.03); margin: 8px 14px 0; flex-shrink: 0;
+}
+.sw-arrow {
+  background: rgba(255,255,255,0.025); border: none;
+  color: rgba(200,152,58,0.45); font-family: 'VT323', monospace; font-size: 20px;
+  padding: 9px 0; cursor: pointer; transition: background 0.1s, color 0.1s;
+  user-select: none; letter-spacing: 0.08em;
+}
+.sw-arrow:hover  { background: rgba(200,152,58,0.07); color: var(--amber); }
+.sw-arrow:active { background: rgba(200,152,58,0.14); }
+
+/* Section label */
+.sw-sect {
+  padding: 9px 14px 4px; font-family: 'Space Mono', monospace; font-size: 7px;
+  letter-spacing: 0.35em; color: rgba(255,255,255,0.14); text-transform: uppercase; flex-shrink: 0;
+}
+
+/* Keypad */
+.sw-keypad {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 1px;
+  background: rgba(255,255,255,0.03); margin: 0 14px; flex-shrink: 0;
+}
+.kp {
+  background: rgba(8,7,6,0.95); border: none;
+  color: rgba(240,235,220,0.65); font-family: 'VT323', monospace; font-size: 29px;
+  padding: 11px 0; cursor: pointer; text-align: center; line-height: 1;
+  transition: background 0.07s, color 0.07s; user-select: none;
+}
+.kp:hover  { background: rgba(200,152,58,0.06); color: rgba(240,235,220,1); }
+.kp:active { background: rgba(200,152,58,0.13); }
+.kp.fn     { font-size: 10px; letter-spacing: 0.1em; color: rgba(255,255,255,0.22); font-family: 'Space Mono', monospace; padding: 11px 3px; }
+.kp.fn-clr { color: rgba(255,60,60,0.5); }
+.kp.fn-clr:hover { color: rgba(255,80,80,0.85); }
+.kp.fn-go  { color: rgba(200,152,58,0.6); }
+.kp.fn-go:hover  { color: var(--amber); }
+
+/* Channel list */
+.sw-ch-list { flex: 1; overflow-y: auto; scrollbar-width: none; }
+.sw-ch-list::-webkit-scrollbar { display: none; }
+.sw-ch-item {
+  display: grid; grid-template-columns: 30px 1fr; align-items: center; gap: 8px;
+  padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,0.03);
+  cursor: pointer; transition: background 0.1s; user-select: none;
+}
+.sw-ch-item:hover     { background: rgba(200,152,58,0.04); }
+.sw-ch-item.here      { background: rgba(200,152,58,0.07); }
+.sw-ci-num  { font-family: 'VT323', monospace; font-size: 20px; color: rgba(255,255,255,0.18); text-align: right; line-height: 1; }
+.sw-ch-item.here .sw-ci-num { color: var(--amber); }
+.sw-ci-name { font-family: 'Space Mono', monospace; font-size: 7.5px; letter-spacing: 0.1em; color: rgba(255,255,255,0.3); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sw-ch-item.here .sw-ci-name { color: rgba(200,152,58,0.65); }
+
+/* Portal link at bottom */
+.sw-portal {
+  margin-top: auto; padding: 10px 14px 12px;
+  border-top: 1px solid rgba(255,255,255,0.04); flex-shrink: 0;
+}
+.sw-portal-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 9px 12px; width: 100%;
+  border: 1px solid rgba(200,152,58,0.18); background: rgba(200,152,58,0.04);
+  color: rgba(200,152,58,0.55); font-family: 'Space Mono', monospace; font-size: 8px;
+  letter-spacing: 0.28em; text-transform: uppercase; text-decoration: none;
+  cursor: pointer; transition: all 0.15s;
+}
+.sw-portal-btn:hover { background: rgba(200,152,58,0.1); color: var(--amber); border-color: rgba(200,152,58,0.35); }
+.sw-portal-note { font-family: 'Space Mono', monospace; font-size: 7px; letter-spacing: 0.15em; color: rgba(255,255,255,0.1); text-align: center; text-transform: uppercase; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<!-- VIDEO + CRT LAYERS -->
+<div id="player-wrap"><div id="yt-player"></div></div>
+<div id="crt-curvature"></div>
+<div id="scanlines"></div>
+<div id="phosphor-mask"></div>
+<div id="vignette"></div>
+<div id="static"></div>
+
+<!-- TUNE-IN GATE -->
+<div id="tune-in" onclick="tuneIn()">
+  <div class="logotitle">from the<br><strong>place</strong></div>
+  <div class="ti-sub">Ōtepoti Music Television</div>
+  <div class="ti-cta">Click to tune in</div>
+</div>
+
+<!-- CHANNEL BUMP -->
+<div id="bump">
+  <div class="logotitle">from the<br><strong>place</strong></div>
+  <div class="bump-tag">You're watching FROM THE PLACE</div>
+</div>
+
+<!-- TOP NAV -->
+<div id="nav">
+  <div class="nav-logo"></div>
+  <div class="nav-right">
+    <div class="live-pill"><div class="live-dot"></div><div class="live-text">Broadcasting</div></div>
+    <div class="nav-btn" id="mute-btn" onclick="toggleMute()">🔇</div>
+    <div class="nav-btn" onclick="toggleFullscreen()">⛶</div>
+  </div>
+</div>
+
+<div id="channel-id">Ōtepoti Music · CH 01</div>
+
+<!-- LOWER THIRD -->
+<div id="lower-third">
+  <div class="lt-now"><div class="lt-now-dot"></div><div class="lt-now-label">Now Playing</div></div>
+  <div class="lt-artist" id="lt-artist">—</div>
+  <div class="lt-context" id="lt-context"></div>
+  <div class="lt-event-badge" id="lt-badge" style="display:none"></div>
+</div>
+<div id="clip-bar-wrap"><div id="clip-bar"></div></div>
+
+<!-- CONTROLS -->
+<div id="controls">
+  <div class="ctrl-progress">
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="prog-times"><span id="prog-cur">—</span><span id="prog-dur">—</span></div>
+  </div>
+  <div class="vol-wrap">
+    <div class="nav-btn" id="vol-icon" onclick="toggleMute()" style="width:30px;height:30px;font-size:13px">🔇</div>
+    <input type="range" class="vol-slider" id="vol-slider" min="0" max="100" value="0" oninput="setVolume(this.value)">
+  </div>
+</div>
+
+<!-- CHANNEL SWITCHER TAB — revealed after tune-in -->
+<div id="sw-tab" onclick="toggleSwitcher()">CH SEL</div>
+
+<!-- CHANNEL SWITCHER PANEL -->
+<div id="switcher">
+  <div class="sw-head">
+    <span class="sw-head-label">Channel Select</span>
+    <span class="sw-close" onclick="toggleSwitcher()">✕</span>
+  </div>
+
+  <div class="sw-readout">
+    <div class="sw-readout-label">Channel</div>
+    <div class="sw-readout-num" id="sw-num">01</div>
+    <div class="sw-readout-name" id="sw-chname">FTP LIVE</div>
+  </div>
+
+  <div class="sw-arrows">
+    <button class="sw-arrow" onclick="swStep(-1)">▲ CH–</button>
+    <button class="sw-arrow" onclick="swStep(+1)">CH+ ▼</button>
+  </div>
+
+  <div class="sw-sect">Direct Entry</div>
+  <div class="sw-keypad">
+    <button class="kp" data-d="1">1</button>
+    <button class="kp" data-d="2">2</button>
+    <button class="kp" data-d="3">3</button>
+    <button class="kp" data-d="4">4</button>
+    <button class="kp" data-d="5">5</button>
+    <button class="kp" data-d="6">6</button>
+    <button class="kp" data-d="7">7</button>
+    <button class="kp" data-d="8">8</button>
+    <button class="kp" data-d="9">9</button>
+    <button class="kp fn fn-clr" data-d="clr">CLR</button>
+    <button class="kp" data-d="0">0</button>
+    <button class="kp fn fn-go"  data-d="go">GO</button>
+  </div>
+
+  <div class="sw-sect">All Channels</div>
+  <div class="sw-ch-list" id="sw-ch-list"></div>
+
+  <div class="sw-portal">
+    <a class="sw-portal-btn" href="portal.html">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none" style="flex-shrink:0">
+        <rect x=".5" y=".5" width="4" height="4" stroke="currentColor" stroke-opacity=".5"/>
+        <rect x="6.5" y=".5" width="4" height="4" stroke="currentColor" stroke-opacity=".5"/>
+        <rect x=".5" y="6.5" width="4" height="4" stroke="currentColor" stroke-opacity=".5"/>
+        <rect x="6.5" y="6.5" width="4" height="4" stroke="currentColor" stroke-opacity=".5"/>
+      </svg>
+      Channel Guide
+    </a>
+    <div class="sw-portal-note">All channels · Browse &amp; tune</div>
+  </div>
+</div>
+
+<script src="FTP_MEGA.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  CHANNEL REGISTRY
+//  Add channels here as they're created. href = the channel's HTML file.
+//  current:true = this page. Used to highlight + skip navigation.
+// ══════════════════════════════════════════════════════════════════
+const CHANNEL_REGISTRY = [
+  { num: 1,  name: 'FTP LIVE',      href: 'channel.html',  current: true  },
+  { num: 2,  name: 'ŌHHH ARCHIVE',  href: 'ch02.html',     current: false },
+  { num: 3,  name: 'LOBOFEST',      href: 'ch03.html',     current: false },
+  { num: 4,  name: 'SPACE CONCERT', href: 'ch04.html',     current: false },
+  { num: 5,  name: 'THE ANTEROOM',  href: 'ch05.html',     current: false },
+  { num: 6,  name: 'MFP',           href: 'ch06.html',     current: false },
+];
+const CURRENT_CH = CHANNEL_REGISTRY.find(c => c.current);
+
+// ══════════════════════════════════════════════════════════════════
+//  FTP LIVE BROADCAST ENGINE — original logic, untouched
+// ══════════════════════════════════════════════════════════════════
+const PLAYLIST      = videoPlaylist;
+const TOTAL_SECONDS = PLAYLIST.reduce((s,t) => s + Math.max(0, t.end - t.start), 0);
+
+function getLivePosition() {
+  const nowSec     = Math.floor(Date.now() / 1000);
+  const dayNumber  = Math.floor(nowSec / 86400);
+  const dailySeed  = Number((BigInt(dayNumber % TOTAL_SECONDS) * 3571n) % BigInt(TOTAL_SECONDS));
+  const posInCycle = ((nowSec % TOTAL_SECONDS) + dailySeed) % TOTAL_SECONDS;
+  let elapsed = 0;
+  for (let i = 0; i < PLAYLIST.length; i++) {
+    const clipLen = PLAYLIST[i].end - PLAYLIST[i].start;
+    if (posInCycle < elapsed + clipLen) return { index: i, seekOffset: posInCycle - elapsed, posInCycle };
+    elapsed += clipLen;
+  }
+  return { index: 0, seekOffset: 0, posInCycle: 0 };
+}
+
+let player = null, videoIndex = 0, _muted = true, progressTimer = null;
+let clipDuration = 0, playerReady = false, hasTunedIn = false;
+let pendingSeek = null, clipEndAt = 0, advancing = false;
+
+function fmt(s) { s = Math.max(0,Math.floor(s)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+
+function parseTitle(title) {
+  const sep = title.includes('—') ? '—' : ' - ';
+  const parts = title.split(sep);
+  return { artist: parts[0].trim(), context: parts.slice(1).join(sep).replace(/\[.*?\]/g,'').replace(/#\w+/g,'').trim() };
+}
+
+function extractEvent(title) {
+  if (/ŌHHH/.test(title))              return 'ŌHHH';
+  if (/[Ll]obofest/.test(title))       return 'LOBOFEST';
+  if (/Music for People/i.test(title)) return 'MFP';
+  if (/Space Concert/i.test(title))    return 'SPACE CONCERT';
+  if (/Nick Knox/i.test(title))        return 'NICK KNOX';
+  if (/NEON/i.test(title))             return 'NEON EXPOSURE';
+  if (/Crown/i.test(title))            return 'THE CROWN';
+  if (/Anteroom/i.test(title))         return 'THE ANTEROOM';
+  if (/indie voices/i.test(title))     return 'INDIE VOICES';
+  if (/Waitati/i.test(title))          return 'WAITATI';
+  if (/Nook/i.test(title))             return 'NOOK & CRANNY';
+  return null;
+}
+
+function tuneIn() {
+  if (hasTunedIn) return;
+  hasTunedIn = true;
+  document.getElementById('tune-in').classList.add('hide');
+  document.getElementById('sw-tab').style.display = '';  // reveal switcher tab
+  if (playerReady && player) {
+    player.unMute(); player.setVolume(80); _muted = false;
+    document.getElementById('mute-btn').textContent = '🔊';
+    document.getElementById('vol-icon').textContent  = '🔊';
+    document.getElementById('vol-slider').value      = 80;
+  }
+}
+
+(function(){ const t=document.createElement('script'); t.src='https://www.youtube.com/iframe_api'; document.head.appendChild(t); })();
+
+window.onYouTubeIframeAPIReady = function() {
+  player = new YT.Player('yt-player', {
+    width: '100%', height: '100%',
+    playerVars: { autoplay:0, mute:1, controls:0, disablekb:1, modestbranding:1, rel:0, iv_load_policy:3, fs:0, playsinline:1 },
+    events: { onReady: onPlayerReady, onStateChange: onStateChange, onError: onError }
+  });
+};
+
+function onPlayerReady()  { playerReady = true; syncToLive(); if (hasTunedIn) unmute(); }
+function syncToLive()     { const { index, seekOffset } = getLivePosition(); videoIndex = index; loadTrack(index, seekOffset); }
+
+function loadTrack(index, seekOffset) {
+  if (!playerReady || !player || !PLAYLIST.length) return;
+  const track = PLAYLIST[index]; if (!track) return;
+  advancing = false; clearInterval(progressTimer);
+  clipDuration = track.end - track.start;
+  const startAt = track.start + (seekOffset || 0);
+  clipEndAt = track.end; pendingSeek = startAt;
+  player.cueVideoById({ videoId: track.id, startSeconds: startAt, endSeconds: track.end });
+  updateOverlay(track);
+}
+
+function onStateChange(e) {
+  const S = YT.PlayerState;
+  if (e.data === S.CUED)     { if (pendingSeek!==null){ player.seekTo(pendingSeek,true); pendingSeek=null; } player.playVideo(); }
+  if (e.data === S.BUFFERING){ if (pendingSeek!==null){ player.seekTo(pendingSeek,true); pendingSeek=null; } }
+  if (e.data === S.PLAYING)  { if (pendingSeek!==null){ const t=pendingSeek; pendingSeek=null; if(Math.abs(player.getCurrentTime()-t)>2) player.seekTo(t,true); } startProgress(); }
+  if (e.data === S.PAUSED)   { clearInterval(progressTimer); }
+  if (e.data === S.ENDED)    { clearInterval(progressTimer); advance(); }
+}
+function onError(e) { console.warn('YT error',e.data); advance(); }
+
+function advance() {
+  if (advancing) return; advancing = true; clearInterval(progressTimer);
+  const s = document.getElementById('static'); s.classList.add('flash'); setTimeout(()=>s.classList.remove('flash'),80);
+  const b = document.getElementById('bump');   b.classList.add('show');
+  setTimeout(()=>{ b.classList.remove('show'); syncToLive(); }, 650);
+}
+
+function startProgress() {
+  clearInterval(progressTimer);
+  progressTimer = setInterval(()=>{
+    if (!player||!playerReady) return;
+    const cur=player.getCurrentTime(), track=PLAYLIST[videoIndex];
+    const elapsed=Math.max(0,cur-track.start);
+    const pct=clipDuration>0?Math.min(100,(elapsed/clipDuration)*100):0, pctS=pct.toFixed(1)+'%';
+    document.getElementById('prog-fill').style.width=pctS;
+    document.getElementById('clip-bar').style.width=pctS;
+    document.getElementById('prog-cur').textContent=fmt(elapsed);
+    if (clipEndAt>0&&cur>=clipEndAt-0.5&&!advancing) advance();
+  }, 500);
+}
+
+function updateOverlay(track) {
+  const p=parseTitle(track.title), event=extractEvent(track.title);
+  document.getElementById('lt-artist').textContent=p.artist;
+  document.getElementById('lt-context').textContent=p.context;
+  document.getElementById('prog-dur').textContent=fmt(clipDuration);
+  document.getElementById('prog-cur').textContent='0:00';
+  document.getElementById('prog-fill').style.width='0%';
+  document.getElementById('clip-bar').style.width='0%';
+  const badge=document.getElementById('lt-badge');
+  if(event){ badge.textContent=event; badge.style.display='inline-block'; } else badge.style.display='none';
+  updateMediaSession(track);
+}
+
+function unmute() {
+  player.unMute(); player.setVolume(80); _muted=false;
+  document.getElementById('mute-btn').textContent='🔊';
+  document.getElementById('vol-icon').textContent='🔊';
+  document.getElementById('vol-slider').value=80;
+}
+function toggleMute() {
+  if (!player) return; _muted=!_muted;
+  if (_muted) { player.mute(); document.getElementById('mute-btn').textContent='🔇'; document.getElementById('vol-icon').textContent='🔇'; document.getElementById('vol-slider').value=0; }
+  else { unmute(); if(!hasTunedIn){ hasTunedIn=true; document.getElementById('tune-in').classList.add('hide'); document.getElementById('sw-tab').style.display=''; } }
+}
+function setVolume(v) {
+  if (!player) return; v=parseInt(v); player.setVolume(v);
+  if(v>0&&_muted){ player.unMute(); _muted=false; if(!hasTunedIn){ hasTunedIn=true; document.getElementById('tune-in').classList.add('hide'); document.getElementById('sw-tab').style.display=''; } }
+  if(v===0){ player.mute(); _muted=true; }
+  document.getElementById('mute-btn').textContent=v>0?'🔊':'🔇';
+  document.getElementById('vol-icon').textContent=v>0?'🔊':'🔇';
+}
+function toggleFullscreen() { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+function updateMediaSession(track) {
+  if(!('mediaSession' in navigator)) return;
+  const p=parseTitle(track.title);
+  navigator.mediaSession.metadata=new MediaMetadata({ title:p.artist, artist:p.context||'FROM THE PLACE', album:'Ōtepoti Music Television', artwork:[{src:'icons/icon-192.png',sizes:'192x192',type:'image/png'},{src:'icons/icon-512.png',sizes:'512x512',type:'image/png'}] });
+  navigator.mediaSession.setActionHandler('play',()=>player?.playVideo());
+  navigator.mediaSession.setActionHandler('pause',()=>player?.pauseVideo());
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CHANNEL SWITCHER
+// ══════════════════════════════════════════════════════════════════
+let swOpen  = false;
+let swBuf   = '';
+let swTimer = null;
+
+function toggleSwitcher() {
+  swOpen = !swOpen;
+  document.getElementById('switcher').classList.toggle('open', swOpen);
+  document.getElementById('sw-tab').classList.toggle('open', swOpen);
+}
+
+function swSetReadout(ch) {
+  const el = document.getElementById('sw-num');
+  el.textContent = String(ch.num).padStart(2,'0');
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+  document.getElementById('sw-chname').textContent = ch.name;
+  document.querySelectorAll('.sw-ch-item').forEach(item =>
+    item.classList.toggle('here', parseInt(item.dataset.num) === ch.num)
+  );
+}
+
+function swNavigateTo(ch) {
+  if (ch.current) { toggleSwitcher(); return; }
+  const s = document.getElementById('static');
+  s.classList.add('flash');
+  setTimeout(() => { window.location.href = ch.href; }, 110);
+}
+
+function swStep(dir) {
+  const idx  = CHANNEL_REGISTRY.findIndex(c => c.current);
+  const next = ((idx + dir) + CHANNEL_REGISTRY.length) % CHANNEL_REGISTRY.length;
+  const ch   = CHANNEL_REGISTRY[next];
+  swSetReadout(ch);
+  setTimeout(() => swNavigateTo(ch), 280);
+}
+
+function swKpInput(d) {
+  if (d === 'clr') { swBuf = ''; clearTimeout(swTimer); swSetReadout(CURRENT_CH); return; }
+  if (d === 'go')  { clearTimeout(swTimer); swCommit(); return; }
+  swBuf += d;
+  // preview in readout
+  const el = document.getElementById('sw-num');
+  el.textContent = swBuf.padStart(2,' ');
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+  const n = parseInt(swBuf,10);
+  const ch = CHANNEL_REGISTRY.find(c => c.num === n);
+  document.getElementById('sw-chname').textContent = ch ? ch.name : '—';
+  clearTimeout(swTimer);
+  if (swBuf.length >= 2) { swCommit(); return; }
+  swTimer = setTimeout(swCommit, 1500);
+}
+
+function swCommit() {
+  clearTimeout(swTimer);
+  const n  = parseInt(swBuf || '0', 10);
+  swBuf    = '';
+  const ch = CHANNEL_REGISTRY.find(c => c.num === n);
+  if (ch) { swSetReadout(ch); setTimeout(() => swNavigateTo(ch), 250); }
+  else {
+    const el = document.getElementById('sw-num');
+    el.style.color = '#ff3838'; el.style.textShadow = '0 0 14px rgba(255,50,50,0.5)';
+    setTimeout(() => { el.style.color=''; el.style.textShadow=''; swSetReadout(CURRENT_CH); }, 700);
+  }
+}
+
+function buildSwList() {
+  const list = document.getElementById('sw-ch-list');
+  CHANNEL_REGISTRY.forEach(ch => {
+    const el = document.createElement('div');
+    el.className = 'sw-ch-item' + (ch.current ? ' here' : '');
+    el.dataset.num = ch.num;
+    el.innerHTML = `<div class="sw-ci-num">${String(ch.num).padStart(2,'0')}</div><div class="sw-ci-name">${ch.name}</div>`;
+    el.addEventListener('click', () => { swSetReadout(ch); setTimeout(() => swNavigateTo(ch), 250); });
+    list.appendChild(el);
+  });
+}
+
+document.querySelectorAll('.kp[data-d]').forEach(btn =>
+  btn.addEventListener('click', () => swKpInput(btn.dataset.d))
+);
+
+// Global keyboard after tune-in
+document.addEventListener('keydown', e => {
+  if (!hasTunedIn || e.target.tagName==='INPUT') return;
+  if (e.key==='ArrowRight'||e.key==='ArrowUp')   { e.preventDefault(); if(!swOpen) toggleSwitcher(); swStep(+1); }
+  if (e.key==='ArrowLeft' ||e.key==='ArrowDown')  { e.preventDefault(); if(!swOpen) toggleSwitcher(); swStep(-1); }
+  if (/^[0-9]$/.test(e.key)) { if(!swOpen) toggleSwitcher(); swKpInput(e.key); }
+  if (e.key==='Enter')   swCommit();
+  if (e.key==='Escape' && swOpen) toggleSwitcher();
+});
+
+buildSwList();
+swSetReadout(CURRENT_CH);
+</script>
+</body>
+</html>
