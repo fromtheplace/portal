@@ -7,431 +7,170 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════
-   TOKENS — Backrooms / vintage cable
-═══════════════════════════════════════════ */
 :root {
-  --bg:          #0b0a08;
-  --surface:     #111009;
-  --surface-2:   #181611;
-  --border:      #252218;
-  --border-hi:   #35301f;
-  --amber:       #c8943a;
-  --amber-dim:   #5e420f;
-  --amber-pale:  #e8c882;
-  --red:         #bf2e2e;
-  --red-dim:     #4a1212;
-  --green:       #2ec86e;
-  --text:        #a89c82;
-  --text-dim:    #4a4232;
-  --text-hi:     #e0d4b8;
-  --text-lo:     #2a2418;
-  --white:       #f0e8d8;
-  --font-disp:   'VT323', monospace;
-  --font-mono:   'Share Tech Mono', monospace;
-  --font-cond:   'Barlow Condensed', sans-serif;
+  --bg:         #0b0a08;
+  --surface:    #111009;
+  --surface-2:  #181611;
+  --border:     #252218;
+  --border-hi:  #35301f;
+  --amber:      #c8943a;
+  --amber-dim:  #5e420f;
+  --amber-pale: #e8c882;
+  --red:        #bf2e2e;
+  --red-dim:    #4a1212;
+  --text:       #a89c82;
+  --text-dim:   #4a4232;
+  --text-hi:    #e0d4b8;
+  --text-lo:    #2a2418;
+  --font-disp:  'VT323', monospace;
+  --font-mono:  'Share Tech Mono', monospace;
+  --font-cond:  'Barlow Condensed', sans-serif;
 }
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { height: 100%; }
 body {
-  min-height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.5;
-  overflow-x: hidden;
+  min-height: 100%; background: var(--bg); color: var(--text);
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.5; overflow-x: hidden;
 }
-
-/* ─ GRAIN TEXTURE ─ */
 body::after {
-  content: '';
-  position: fixed; inset: 0;
+  content: ''; position: fixed; inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");
-  background-size: 256px;
-  pointer-events: none;
-  z-index: 999;
-  mix-blend-mode: overlay;
+  background-size: 256px; pointer-events: none; z-index: 999; mix-blend-mode: overlay;
 }
-
-/* ─ SCANLINES ─ */
 body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 3px,
-    rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px
-  );
-  pointer-events: none;
-  z-index: 998;
+  content: ''; position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
+  pointer-events: none; z-index: 998;
 }
 
-/* ═══════════════════════════════════════════
-   MASTHEAD
-═══════════════════════════════════════════ */
+/* MASTHEAD */
 #masthead {
   position: sticky; top: 0; z-index: 100;
-  display: flex; align-items: stretch; justify-content: space-between;
+  display: flex; align-items: stretch;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
-  height: 56px;
+  background: var(--surface); height: 60px;
 }
-
-.mast-left {
-  display: flex; align-items: center; gap: 0;
-  border-right: 1px solid var(--border);
+.mast-logo-cell {
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px 18px; border-right: 1px solid var(--border); flex-shrink: 0;
 }
-.mast-logo {
-  width: 72px; height: 56px;
-  background: url('images/ftptv.png') center/contain no-repeat;
-  padding: 8px 12px;
-  border-right: 1px solid var(--border);
-  flex-shrink: 0;
+.mast-logo-cell img {
+  height: 40px; width: auto; display: block;
+  filter: brightness(0.92) contrast(1.05);
 }
-.mast-title {
-  padding: 0 16px;
-  display: flex; flex-direction: column; justify-content: center;
-}
-.mast-title-main {
-  font-family: var(--font-disp);
-  font-size: 24px;
-  color: var(--amber);
-  letter-spacing: 0.12em;
-  line-height: 1;
-}
-.mast-title-sub {
-  font-family: var(--font-mono);
-  font-size: 8px;
-  letter-spacing: 0.35em;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  margin-top: 3px;
-}
-
 .mast-center {
-  flex: 1;
-  display: flex; align-items: center; justify-content: center; gap: 20px;
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-}
-.mast-clock {
-  font-family: var(--font-disp);
-  font-size: 28px;
-  color: var(--text-dim);
-  letter-spacing: 0.1em;
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 20px;
 }
 .mast-on-air {
   display: flex; align-items: center; gap: 6px;
-  padding: 3px 10px;
-  border: 1px solid var(--red-dim);
-  background: rgba(191,46,46,0.07);
+  padding: 3px 10px; border: 1px solid var(--red-dim); background: rgba(191,46,46,0.07);
 }
 .on-air-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%; background: var(--red);
+  width: 5px; height: 5px; border-radius: 50%; background: var(--red);
   animation: dot-pulse 1.4s ease-in-out infinite;
 }
 @keyframes dot-pulse {
   0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(191,46,46,0.5)}
   50%{opacity:0.5;box-shadow:0 0 0 5px rgba(191,46,46,0)}
 }
-.on-air-text {
-  font-family: var(--font-mono); font-size: 8px;
-  letter-spacing: 0.28em; color: var(--red); text-transform: uppercase;
-}
-
-.mast-right {
-  display: flex; align-items: center; padding: 0 16px; gap: 10px;
-  border-left: 1px solid var(--border);
-}
-.mast-btn {
-  font-family: var(--font-mono); font-size: 8px;
-  letter-spacing: 0.25em; color: var(--text-dim); text-transform: uppercase;
-  cursor: pointer; text-decoration: none; transition: color 0.15s;
-}
+.on-air-text { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.28em; color: var(--red); text-transform: uppercase; }
+.mast-clock { font-family: var(--font-disp); font-size: 28px; color: var(--text-dim); letter-spacing: 0.1em; }
+.mast-right { display: flex; align-items: center; padding: 0 18px; border-left: 1px solid var(--border); flex-shrink: 0; }
+.mast-btn { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.25em; color: var(--text-dim); text-transform: uppercase; text-decoration: none; transition: color 0.15s; white-space: nowrap; }
 .mast-btn:hover { color: var(--amber); }
 
-/* ═══════════════════════════════════════════
-   HERO STRIP — "You are watching" broadcast bar
-═══════════════════════════════════════════ */
+/* HERO STRIP */
 #hero-strip {
-  border-bottom: 1px solid var(--border);
-  background: var(--surface-2);
-  padding: 8px 24px;
-  display: flex; align-items: center; gap: 14px;
+  border-bottom: 1px solid var(--border); background: var(--surface-2);
+  padding: 7px 24px; display: flex; align-items: center; gap: 14px; min-height: 36px;
 }
-.hs-label {
-  font-family: var(--font-mono); font-size: 8px;
-  letter-spacing: 0.35em; color: var(--text-dim); text-transform: uppercase;
-  white-space: nowrap;
-}
-.hs-track {
-  font-family: var(--font-disp); font-size: 22px;
-  color: var(--text-hi); letter-spacing: 0.05em;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  flex: 1;
-}
-.hs-context {
-  font-family: var(--font-mono); font-size: 9px;
-  color: var(--text-dim); letter-spacing: 0.15em;
-  white-space: nowrap; flex-shrink: 0;
-}
+.hs-ch { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.35em; color: var(--text-dim); text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+.hs-track { font-family: var(--font-disp); font-size: 21px; color: var(--text-hi); letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.hs-ctx { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); letter-spacing: 0.12em; white-space: nowrap; flex-shrink: 0; }
 
-/* ═══════════════════════════════════════════
-   MAIN LAYOUT — content area
-═══════════════════════════════════════════ */
-#main {
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
+/* MAIN */
+#main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+.section-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section-head-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.4em; color: var(--text-dim); text-transform: uppercase; }
+.section-head-count { font-family: var(--font-disp); font-size: 20px; color: var(--amber-dim); }
 
-/* section heading */
-.section-head {
-  display: flex; align-items: baseline; gap: 12px;
-  margin-bottom: 16px; padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
-.section-head-label {
-  font-family: var(--font-mono); font-size: 8px;
-  letter-spacing: 0.4em; color: var(--text-dim); text-transform: uppercase;
-}
-.section-head-count {
-  font-family: var(--font-disp); font-size: 20px; color: var(--amber-dim);
-}
+/* CHANNEL GRID */
+#channel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
 
-/* ═══════════════════════════════════════════
-   CHANNEL GRID
-═══════════════════════════════════════════ */
-#channel-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  margin-bottom: 32px;
-}
-
-/* ─ CHANNEL CARD ─ */
+/* CHANNEL CARD */
 .ch-card {
-  background: var(--surface);
-  display: block;
-  text-decoration: none;
-  color: inherit;
-  position: relative;
-  cursor: pointer;
-  outline: none;
-  transition: background 0.12s;
-  border-left: 3px solid transparent;
+  background: var(--surface); display: block; text-decoration: none; color: inherit;
+  position: relative; cursor: pointer; outline: none;
+  border-left: 3px solid transparent; transition: background 0.12s, border-color 0.12s;
 }
 .ch-card:hover    { background: var(--surface-2); border-left-color: var(--amber-dim); }
 .ch-card.featured { background: var(--surface-2); border-left-color: var(--amber); }
 .ch-card:focus-visible { outline: 2px solid var(--amber-dim); outline-offset: -2px; }
 
-/* thumbnail — 16:9, full width */
-.ch-thumb {
-  position: relative;
-  width: 100%;
-  padding-top: 56.25%;
-  background: #000;
-  overflow: hidden;
-}
-.ch-thumb img {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  /* vintage: desaturated, slight sepia */
-  filter: sepia(0.4) brightness(0.8) contrast(1.05) saturate(0.85);
-}
-.ch-thumb img.loaded { opacity: 0.8; }
-.ch-card:hover .ch-thumb img,
-.ch-card.featured .ch-thumb img { opacity: 1; filter: sepia(0.2) brightness(0.9) contrast(1.05); }
+/* THUMB AREA */
+.ch-thumb { position: relative; width: 100%; padding-top: 56.25%; background: #000; overflow: hidden; }
 
-/* thumb fallback */
-.ch-thumb-fb {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #0c0a07 0%, #1a1610 100%);
+/* Static cover — visible at rest */
+.ch-thumb-static {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+  filter: sepia(0.45) brightness(0.75) contrast(1.08) saturate(0.8);
+  transition: opacity 0.28s ease;
 }
-.ch-thumb-fb-num {
-  font-family: var(--font-disp);
-  font-size: 56px;
-  color: var(--text-lo);
-  letter-spacing: -3px;
-  line-height: 1;
+/* Live YT thumb — hidden at rest, cross-fades in on hover */
+.ch-thumb-live {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity 0.3s ease;
+  filter: brightness(0.9) contrast(1.05);
 }
+.ch-card:hover .ch-thumb-live.ready { opacity: 1; }
+.ch-card:hover .ch-thumb-static     { opacity: 0; }
 
-/* overlay gradient on thumb */
-.ch-thumb::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(0deg, rgba(8,7,5,0.7) 0%, transparent 50%);
-  pointer-events: none;
-}
+/* fallback */
+.ch-thumb-fb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0c0a07 0%, #1a1610 100%); }
+.ch-thumb-fb-num { font-family: var(--font-disp); font-size: 56px; color: var(--text-lo); letter-spacing: -3px; line-height: 1; }
 
-/* LIVE badge on thumb */
-.ch-live {
-  position: absolute; top: 8px; left: 8px; z-index: 2;
-  display: flex; align-items: center; gap: 4px;
-  background: rgba(191,46,46,0.9);
-  padding: 2px 6px;
-  font-family: var(--font-mono); font-size: 7px;
-  letter-spacing: 0.25em; color: #fff; text-transform: uppercase;
-  backdrop-filter: blur(4px);
-}
-.ch-live::before {
-  content: ''; width: 4px; height: 4px;
-  border-radius: 50%; background: #fff;
-  animation: blink 1.1s step-end infinite;
-}
+/* gradient over bottom of thumb */
+.ch-thumb::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(8,7,5,0.78) 0%, transparent 55%); pointer-events: none; z-index: 2; }
+
+/* badges */
+.ch-live { position: absolute; top: 7px; left: 8px; z-index: 3; display: flex; align-items: center; gap: 4px; background: rgba(191,46,46,0.88); padding: 2px 6px; font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.22em; color: #fff; text-transform: uppercase; }
+.ch-live::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: #fff; animation: blink 1.1s step-end infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 .ch-live.off { display: none; }
-
-/* CH number watermark on thumb */
-.ch-num-overlay {
-  position: absolute; bottom: 7px; right: 10px; z-index: 2;
-  font-family: var(--font-disp); font-size: 18px;
-  color: rgba(255,255,255,0.18); letter-spacing: 0.05em;
-  pointer-events: none;
-}
-
-/* ACTIVE indicator — "ON AIR" badge when this is the playing channel */
-.ch-on-air {
-  position: absolute; top: 8px; right: 8px; z-index: 2;
-  font-family: var(--font-mono); font-size: 7px;
-  letter-spacing: 0.2em; color: var(--amber);
-  border: 1px solid rgba(200,148,58,0.4);
-  background: rgba(200,148,58,0.1);
-  padding: 2px 6px; text-transform: uppercase;
-  display: none;
-}
+.ch-num-overlay { position: absolute; bottom: 7px; right: 9px; z-index: 3; font-family: var(--font-disp); font-size: 17px; color: rgba(255,255,255,0.2); letter-spacing: 0.05em; pointer-events: none; }
+.ch-on-air { position: absolute; top: 7px; right: 8px; z-index: 3; font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.18em; color: var(--amber); border: 1px solid rgba(200,148,58,0.4); background: rgba(200,148,58,0.1); padding: 2px 6px; text-transform: uppercase; display: none; }
 .ch-card.featured .ch-on-air { display: block; }
 
-/* Card metadata */
-.ch-meta {
-  padding: 10px 12px 12px;
-  display: grid;
-  grid-template-columns: 38px 1fr;
-  gap: 0 10px;
-  align-items: start;
-}
-.ch-num {
-  font-family: var(--font-disp); font-size: 30px;
-  color: var(--text-dim); line-height: 1;
-  padding-top: 2px; text-align: right;
-  transition: color 0.12s;
-}
-.ch-card:hover .ch-num,
-.ch-card.featured .ch-num { color: var(--amber); }
+/* NOW PLAYING overlay on thumb bottom */
+.ch-np { position: absolute; bottom: 0; left: 0; right: 0; z-index: 4; padding: 6px 9px 7px; pointer-events: none; }
+.ch-np-label { font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.28em; color: rgba(200,148,58,0.65); text-transform: uppercase; line-height: 1; margin-bottom: 2px; }
+.ch-np-text { font-family: var(--font-disp); font-size: 16px; color: rgba(240,232,216,0.9); letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
+.ch-np-text.loading { color: rgba(255,255,255,0.18); font-size: 11px; letter-spacing: 0.2em; }
+.ch-np-text.error   { color: rgba(255,255,255,0.12); font-size: 11px; letter-spacing: 0.15em; }
 
-.ch-info {}
-.ch-name {
-  font-family: var(--font-cond);
-  font-weight: 700; font-size: 13px;
-  letter-spacing: 0.08em; color: var(--text-hi);
-  text-transform: uppercase; line-height: 1.1;
-}
-.ch-program {
-  font-family: var(--font-mono);
-  font-size: 9px; color: var(--text-dim);
-  margin-top: 3px; letter-spacing: 0.05em;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.ch-tag {
-  display: inline-block; margin-top: 5px;
-  font-family: var(--font-mono); font-size: 7px;
-  letter-spacing: 0.2em; color: var(--amber-dim);
-  border: 1px solid var(--border-hi); padding: 1px 5px;
-  text-transform: uppercase;
-}
+/* CARD META */
+.ch-meta { padding: 9px 12px 11px; display: grid; grid-template-columns: 36px 1fr; gap: 0 10px; align-items: start; }
+.ch-num { font-family: var(--font-disp); font-size: 28px; color: var(--text-dim); line-height: 1; padding-top: 2px; text-align: right; transition: color 0.12s; }
+.ch-card:hover .ch-num, .ch-card.featured .ch-num { color: var(--amber); }
+.ch-name { font-family: var(--font-cond); font-weight: 700; font-size: 13px; letter-spacing: 0.08em; color: var(--text-hi); text-transform: uppercase; line-height: 1.15; }
+.ch-desc { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-tag { display: inline-block; margin-top: 4px; font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.2em; color: var(--amber-dim); border: 1px solid var(--border-hi); padding: 1px 5px; text-transform: uppercase; }
 
-/* ═══════════════════════════════════════════
-   SCHEDULE / LOG SECTION
-   Flat list of what's coming up on Ch1
-═══════════════════════════════════════════ */
-#schedule-section { margin-bottom: 40px; }
-#schedule-list {
-  border: 1px solid var(--border);
-}
-.sched-item {
-  display: grid;
-  grid-template-columns: 52px 1fr auto;
-  align-items: center;
-  gap: 0 14px;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--border);
-  transition: background 0.1s;
-}
-.sched-item:last-child { border-bottom: none; }
-.sched-item:hover { background: var(--surface-2); }
-.sched-item.now { background: rgba(200,148,58,0.05); border-left: 2px solid var(--amber); }
-.sched-idx {
-  font-family: var(--font-disp); font-size: 18px;
-  color: var(--text-lo); text-align: right; line-height: 1;
-}
-.sched-item.now .sched-idx { color: var(--amber); }
-.sched-title {
-  font-family: var(--font-mono); font-size: 11px;
-  color: var(--text); white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.04em;
-}
-.sched-item.now .sched-title { color: var(--text-hi); }
-.sched-dur {
-  font-family: var(--font-mono); font-size: 9px;
-  color: var(--text-dim); letter-spacing: 0.1em; white-space: nowrap;
-}
-.sched-now-badge {
-  display: none; font-family: var(--font-mono); font-size: 7px;
-  letter-spacing: 0.2em; color: var(--red); text-transform: uppercase;
-  padding: 1px 5px; border: 1px solid var(--red-dim);
-  background: rgba(191,46,46,0.06); flex-shrink: 0;
-}
-.sched-item.now .sched-now-badge { display: block; }
+/* FOOTER */
+#footer { border-top: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; background: var(--surface); margin-top: 32px; }
+.footer-sig { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.28em; color: var(--text-dim); text-transform: uppercase; }
+.footer-ch  { font-family: var(--font-disp); font-size: 20px; color: var(--text-lo); letter-spacing: 0.1em; }
 
-/* ═══════════════════════════════════════════
-   FOOTER
-═══════════════════════════════════════════ */
-#footer {
-  border-top: 1px solid var(--border);
-  padding: 14px 24px;
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--surface);
-}
-.footer-sig {
-  font-family: var(--font-mono); font-size: 8px;
-  letter-spacing: 0.3em; color: var(--text-dim); text-transform: uppercase;
-}
-.footer-ch {
-  font-family: var(--font-disp); font-size: 20px;
-  color: var(--text-lo); letter-spacing: 0.1em;
-}
-
-/* ═══════════════════════════════════════════
-   RESPONSIVE
-═══════════════════════════════════════════ */
-@media (max-width: 700px) {
-  #channel-grid { grid-template-columns: 1fr 1fr; }
-  #main { padding: 14px; }
-  .mast-center { display: none; }
-}
-@media (max-width: 480px) {
-  #channel-grid { grid-template-columns: 1fr; }
-}
+@media (max-width: 700px) { #channel-grid { grid-template-columns: 1fr 1fr; } #main { padding: 12px; } .mast-center { display: none; } }
+@media (max-width: 440px) { #channel-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
-<!-- MASTHEAD -->
 <header id="masthead">
-  <div class="mast-left">
-    <div class="mast-logo"></div>
-    <div class="mast-title">
-      <div class="mast-title-main">FROM THE PLACE</div>
-      <div class="mast-title-sub">Ōtepoti Music Television</div>
-    </div>
+  <div class="mast-logo-cell">
+    <!-- FTP TV logo — drop ftptv.png in same directory as portal.html -->
+    <img src="ftptv.png" alt="FTP TV">
   </div>
   <div class="mast-center">
     <div class="mast-on-air"><div class="on-air-dot"></div><div class="on-air-text">On Air</div></div>
@@ -442,260 +181,418 @@ body::before {
   </div>
 </header>
 
-<!-- HERO STRIP — now playing on Ch1, derived from live position -->
 <div id="hero-strip">
-  <span class="hs-label">CH 01 / Now Playing</span>
+  <span class="hs-ch" id="hs-ch">CH 01</span>
   <span class="hs-track" id="hs-track">—</span>
-  <span class="hs-context" id="hs-context"></span>
+  <span class="hs-ctx" id="hs-ctx"></span>
 </div>
 
-<!-- MAIN -->
 <main id="main">
-
-  <!-- CHANNEL GRID -->
   <div class="section-head">
     <span class="section-head-label">Channels</span>
     <span class="section-head-count" id="ch-count"></span>
   </div>
   <div id="channel-grid"></div>
-
-  <!-- SCHEDULE — upcoming on Ch1 -->
-  <section id="schedule-section">
-    <div class="section-head">
-      <span class="section-head-label">Up Next on CH 01</span>
-    </div>
-    <div id="schedule-list"></div>
-  </section>
-
 </main>
 
-<!-- FOOTER -->
 <footer id="footer">
   <div class="footer-sig">From The Place · Ōtepoti Music Television</div>
-  <div class="footer-ch">CH 01–06</div>
+  <div class="footer-ch" id="footer-range">—</div>
 </footer>
 
 <script src="FTP_MEGA.js"></script>
 <script>
 // ══════════════════════════════════════════════════════════════════
-//  SHARED CHANNEL REGISTRY
-//  Must match channel.html's CHANNEL_REGISTRY exactly.
-//  thumb: provide a YT videoId and we auto-pull hqdefault.jpg
-//        OR provide a full thumb URL.
-//        Leave thumbId null for placeholder channels.
+//  CHANNEL REGISTRY
+//
+//  To add a new channel with the same stack as FTP/NookTV:
+//    1. Add an entry below
+//    2. Set nowPlaying: { type: 'fetchjs', url: 'https://.../*_MEGA.js', varName: 'videoPlaylist' }
+//    3. Set thumb or thumbId for the cover image
+//    Done. Now-playing and hover thumbnails resolve automatically.
+//
+//  THUMBNAIL FIELDS:
+//    thumb   — custom image URL or local path. Highest priority.
+//    thumbId — YouTube video ID. Static cover + live hover thumb source.
+//
+//  NOW PLAYING TYPES:
+//    { type: 'ftpengine', playlist: <array> }   — local playlist already loaded
+//    { type: 'fetchjs', url, varName }          — fetch remote *_MEGA.js and compute
+//    { type: 'static', text }                   — fixed string
+//    null                                       — no now-playing shown
 // ══════════════════════════════════════════════════════════════════
 const CHANNELS = [
   {
-    num:     1,
-    name:    'FTP LIVE',
-    tag:     'LIVE BROADCAST',
-    desc:    'Ōtepoti Music Television — continuous live stream',
-    live:    true,
-    href:    'channel.html',
-    thumbId: null,   // auto-pulled from current YT track below
-    current: false,  // portal is not a channel
+    num:      1,
+    name:     'FTP LIVE',
+    tag:      'LIVE BROADCAST',
+    desc:     'Ōtepoti Music Television — continuous live stream',
+    live:     true,
+    href:     'channel.html',
+    featured: true,
+    thumb:    null,
+    thumbId:  null,        // set at runtime from live playlist
+    nowPlaying: { type: 'ftpengine', playlist: null }, // filled after script loads
   },
   {
-    num:     2,
-    name:    'ŌHHH ARCHIVE',
-    tag:     'ARCHIVE',
-    desc:    'Full sets from ŌHHH events 2022–2024',
-    live:    false,
-    href:    'https://fromtheplace.github.io/nooktv/',
-    thumbId: 'xX6NIpgr8WA',  // first ŌHHH clip from playlist
+    num:      2,
+    name:     'NOOK & CRANNY',
+    tag:      'LIVE',
+    desc:     'Nook & Cranny TV — Ōtepoti',
+    live:     true,
+    href:     'https://fromtheplace.github.io/nooktv/',
+    featured: false,
+    thumb:    null,
+    thumbId:  null,        // will come from live playlist fetch
+    nowPlaying: {
+      type:    'fetchjs',
+      url:     'https://fromtheplace.github.io/nooktv/NOOK_MEGA.js',
+      varName: 'videoPlaylist',
+    },
   },
   {
-    num:     3,
-    name:    'LOBOFEST',
-    tag:     'FESTIVAL',
-    desc:    'Recorded sessions from Lobofest 21',
-    live:    false,
-    href:    'https://fromtheplace.github.io/nooktv/',
-    thumbId: 'X1-uLV4BgHU',
+    num:      3,
+    name:     'ŌHHH ARCHIVE',
+    tag:      'ARCHIVE',
+    desc:     'Full sets from ŌHHH events 2022–2024',
+    live:     false,
+    href:     'https://fromtheplace.github.io/ftptv/',
+    featured: false,
+    thumb:    null,           // e.g. 'images/ohhh-cover.jpg'
+    thumbId:  'xX6NIpgr8WA',
+    nowPlaying: { type: 'static', text: 'ŌHHH Archive' },
   },
   {
-    num:     4,
-    name:    'SPACE CONCERT',
-    tag:     'EVENT',
-    desc:    'The Space Concert series',
-    live:    false,
-    href:    'ch04.html',
-    thumbId: '7HxENNQql38',
+    num:      4,
+    name:     'LOBOFEST',
+    tag:      'FESTIVAL',
+    desc:     'Recorded sessions from Lobofest 21',
+    live:     false,
+    href:     'ch04.html',
+    featured: false,
+    thumb:    null,
+    thumbId:  'X1-uLV4BgHU',
+    nowPlaying: { type: 'static', text: 'Lobofest 21' },
   },
   {
-    num:     5,
-    name:    'THE ANTEROOM',
-    tag:     'INTIMATE',
-    desc:    'Live recordings from The Anteroom',
-    live:    false,
-    href:    'ch05.html',
-    thumbId: 'Onet82xMWdg',
+    num:      5,
+    name:     'SPACE CONCERT',
+    tag:      'EVENT',
+    desc:     'The Space Concert series',
+    live:     false,
+    href:     'ch05.html',
+    featured: false,
+    thumb:    null,
+    thumbId:  '7HxENNQql38',
+    nowPlaying: null,
   },
   {
-    num:     6,
-    name:    'MFP',
-    tag:     'SERIES',
-    desc:    'Music for People — the series',
-    live:    false,
-    href:    'ch06.html',
-    thumbId: 'XvE0GewwNlI',
+    num:      6,
+    name:     'THE ANTEROOM',
+    tag:      'INTIMATE',
+    desc:     'Live recordings from The Anteroom',
+    live:     false,
+    href:     'ch06.html',
+    featured: false,
+    thumb:    null,
+    thumbId:  'Onet82xMWdg',
+    nowPlaying: null,
+  },
+  {
+    num:      7,
+    name:     'MFP',
+    tag:      'SERIES',
+    desc:     'Music for People — the series',
+    live:     false,
+    href:     'ch07.html',
+    featured: false,
+    thumb:    null,
+    thumbId:  'XvE0GewwNlI',
+    nowPlaying: null,
   },
 ];
 
-// ── LIVE POSITION (mirrors channel.html engine, read-only) ─────────
-const PLAYLIST      = videoPlaylist;
-const TOTAL_SECONDS = PLAYLIST.reduce((s,t) => s + Math.max(0, t.end - t.start), 0);
+// Wire CH1's local playlist (already available from FTP_MEGA.js <script> above)
+CHANNELS[0].nowPlaying.playlist = videoPlaylist;
 
-function getLivePosition() {
-  const nowSec     = Math.floor(Date.now() / 1000);
-  const dayNumber  = Math.floor(nowSec / 86400);
-  const dailySeed  = Number((BigInt(dayNumber % TOTAL_SECONDS) * 3571n) % BigInt(TOTAL_SECONDS));
-  const posInCycle = ((nowSec % TOTAL_SECONDS) + dailySeed) % TOTAL_SECONDS;
-  let elapsed = 0;
-  for (let i = 0; i < PLAYLIST.length; i++) {
-    const clipLen = PLAYLIST[i].end - PLAYLIST[i].start;
-    if (posInCycle < elapsed + clipLen) return { index: i, seekOffset: posInCycle - elapsed };
-    elapsed += clipLen;
+// ══════════════════════════════════════════════════════════════════
+//  LIVE POSITION ENGINE  (same logic as channel.html)
+// ══════════════════════════════════════════════════════════════════
+function getLivePosition(playlist) {
+  const total  = playlist.reduce((s,t) => s + Math.max(0, t.end - t.start), 0);
+  if (!total) return { index: 0 };
+  const nowSec = Math.floor(Date.now() / 1000);
+  const dayNum = Math.floor(nowSec / 86400);
+  const seed   = Number((BigInt(dayNum % total) * 3571n) % BigInt(total));
+  const pos    = ((nowSec % total) + seed) % total;
+  let elapsed  = 0;
+  for (let i = 0; i < playlist.length; i++) {
+    const len = playlist[i].end - playlist[i].start;
+    if (pos < elapsed + len) return { index: i, seekOffset: pos - elapsed };
+    elapsed += len;
   }
   return { index: 0, seekOffset: 0 };
 }
 
-function fmt(s) { s = Math.max(0,Math.floor(s)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
-
 function parseTitle(title) {
-  const sep = title.includes('—') ? '—' : ' - ';
+  const sep   = title.includes('—') ? '—' : ' - ';
   const parts = title.split(sep);
-  return { artist: parts[0].trim(), context: parts.slice(1).join(sep).replace(/\[.*?\]/g,'').replace(/#\w+/g,'').trim() };
-}
-
-// ── THUMBNAIL HELPER ───────────────────────────────────────────────
-// Pull from i.ytimg.com — public, no API key needed.
-// hqdefault (480×360) is almost universally available.
-// maxresdefault is best but 404s for older/short videos — use hq as safe default.
-function ytThumb(videoId, q = 'hqdefault') {
-  return `https://i.ytimg.com/vi/${videoId}/${q}.jpg`;
-}
-
-// Try maxres, fall back to hqdefault on error
-function loadThumbWithFallback(img, videoId) {
-  const hq   = ytThumb(videoId, 'hqdefault');
-  const maxr = ytThumb(videoId, 'maxresdefault');
-  img.src = maxr;
-  img.onerror = () => {
-    img.onerror = () => { img.style.display = 'none'; }; // hide if both fail
-    img.src = hq;
+  return {
+    artist:  parts[0].trim(),
+    context: parts.slice(1).join(sep).replace(/\[.*?\]/g,'').replace(/#\w+/g,'').trim(),
   };
-  img.onload = () => img.classList.add('loaded');
 }
 
-// ── BUILD CHANNEL GRID ─────────────────────────────────────────────
-function buildGrid() {
-  const grid  = document.getElementById('channel-grid');
-  const live  = getLivePosition();
-  const liveThumbId = PLAYLIST[live.index]?.id || PLAYLIST[0]?.id;
-  document.getElementById('ch-count').textContent = CHANNELS.length;
-
-  CHANNELS.forEach(ch => {
-    const thumbId = ch.num === 1 ? liveThumbId : ch.thumbId;
-
-    const card = document.createElement('a');
-    card.className = 'ch-card' + (ch.num === 1 ? ' featured' : '');
-    card.href = ch.href;
-    card.setAttribute('role', 'listitem');
-    card.setAttribute('tabindex', '0');
-    card.setAttribute('aria-label', `Channel ${ch.num}: ${ch.name} — ${ch.desc}`);
-
-    // Thumb image
-    let thumbImgHtml = '';
-    let fallbackStyle = '';
-    if (thumbId) {
-      thumbImgHtml = `<img alt="${ch.name}" loading="lazy">`;
-      fallbackStyle = 'display:none';
-    }
-
-    card.innerHTML = `
-      <div class="ch-thumb">
-        ${thumbImgHtml}
-        <div class="ch-thumb-fb" style="${thumbId ? fallbackStyle : ''}">
-          <div class="ch-thumb-fb-num">${String(ch.num).padStart(2,'0')}</div>
-        </div>
-        <div class="ch-live${ch.live ? '' : ' off'}">LIVE</div>
-        <div class="ch-on-air">ON AIR</div>
-        <div class="ch-num-overlay">CH ${String(ch.num).padStart(2,'0')}</div>
-      </div>
-      <div class="ch-meta">
-        <div class="ch-num">${String(ch.num).padStart(2,'0')}</div>
-        <div class="ch-info">
-          <div class="ch-name">${ch.name}</div>
-          <div class="ch-program">${ch.desc}</div>
-          ${ch.tag ? `<div class="ch-tag">${ch.tag}</div>` : ''}
-        </div>
-      </div>
-    `;
-
-    // Load thumb after DOM insertion
-    if (thumbId) {
-      const img = card.querySelector('img');
-      const fb  = card.querySelector('.ch-thumb-fb');
-      img.addEventListener('error', () => { img.style.display = 'none'; fb.style.display = ''; });
-      img.addEventListener('load',  () => { img.classList.add('loaded'); fb.style.display = 'none'; });
-      loadThumbWithFallback(img, thumbId);
-    }
-
-    grid.appendChild(card);
-  });
-}
-
-// ── HERO STRIP — now playing on Ch1 ────────────────────────────────
-function updateHeroStrip() {
-  const { index } = getLivePosition();
-  const track = PLAYLIST[index];
-  if (!track) return;
+function playlistNowPlaying(playlist) {
+  const { index } = getLivePosition(playlist);
+  const track     = playlist[index];
+  if (!track) return { text: '—', videoId: null };
   const p = parseTitle(track.title);
-  document.getElementById('hs-track').textContent   = p.artist;
-  document.getElementById('hs-context').textContent = p.context || '';
+  return {
+    text:    p.artist + (p.context ? ' — ' + p.context : ''),
+    videoId: track.id,
+  };
 }
 
-// ── SCHEDULE — next N tracks on Ch1 ────────────────────────────────
-function buildSchedule() {
-  const { index } = getLivePosition();
-  const list      = document.getElementById('schedule-list');
-  const count     = Math.min(12, PLAYLIST.length);
+// ══════════════════════════════════════════════════════════════════
+//  REMOTE PLAYLIST FETCH
+//  Fetches a *_MEGA.js from any URL, evals the playlist var.
+//  Cached per URL. CORS-safe because GitHub Pages sends permissive headers.
+// ══════════════════════════════════════════════════════════════════
+const _cache = {};
 
-  for (let i = 0; i < count; i++) {
-    const trackIdx = (index + i) % PLAYLIST.length;
-    const track    = PLAYLIST[trackIdx];
-    const dur      = track.end - track.start;
-    const p        = parseTitle(track.title);
-
-    const item = document.createElement('div');
-    item.className = 'sched-item' + (i === 0 ? ' now' : '');
-    item.innerHTML = `
-      <div class="sched-idx">${String(i + 1).padStart(2,'0')}</div>
-      <div class="sched-title">${p.artist}${p.context ? ' — ' + p.context : ''}</div>
-      <div class="sched-dur">${fmt(dur)}</div>
-      <div class="sched-now-badge">NOW</div>
-    `;
-    list.appendChild(item);
+async function fetchRemotePlaylist(url, varName) {
+  if (_cache[url]) return _cache[url];
+  try {
+    const res  = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    // Evaluate in isolated function scope — no globals polluted
+    const fn   = new Function(`${text}; return typeof ${varName} !== 'undefined' ? ${varName} : null;`);
+    const arr  = fn();
+    if (!Array.isArray(arr) || !arr.length) throw new Error('No array found');
+    _cache[url] = arr;
+    return arr;
+  } catch (e) {
+    console.warn(`[portal] fetchRemotePlaylist(${url}):`, e.message);
+    return null;
   }
 }
 
-// ── CLOCK ──────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+//  RESOLVE NOW PLAYING — works for any channel type
+// ══════════════════════════════════════════════════════════════════
+async function resolveNowPlaying(ch) {
+  const np = ch.nowPlaying;
+  if (!np) return null;
+
+  if (np.type === 'ftpengine') {
+    const pl = np.playlist;
+    if (!pl?.length) return null;
+    return playlistNowPlaying(pl);
+  }
+
+  if (np.type === 'fetchjs') {
+    const pl = await fetchRemotePlaylist(np.url, np.varName || 'videoPlaylist');
+    if (!pl) return null;
+    return playlistNowPlaying(pl);
+  }
+
+  if (np.type === 'static') {
+    return { text: np.text, videoId: null };
+  }
+
+  return null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  THUMBNAILS
+// ══════════════════════════════════════════════════════════════════
+function ytThumb(id, q) { return `https://i.ytimg.com/vi/${id}/${q}.jpg`; }
+
+function loadYtThumb(img, videoId, onDone) {
+  img.onerror = () => {
+    img.onerror = () => { onDone && onDone(false); };
+    img.src = ytThumb(videoId, 'hqdefault');
+  };
+  img.onload  = () => { onDone && onDone(true); };
+  img.src     = ytThumb(videoId, 'maxresdefault');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  BUILD GRID
+// ══════════════════════════════════════════════════════════════════
+const cardMap = {}; // ch.num → card element, for refresh
+
+function buildGrid() {
+  const grid = document.getElementById('channel-grid');
+  grid.innerHTML = '';
+  document.getElementById('ch-count').textContent = CHANNELS.length;
+  const nums = CHANNELS.map(c => c.num);
+  document.getElementById('footer-range').textContent =
+    `CH ${String(Math.min(...nums)).padStart(2,'0')}–${String(Math.max(...nums)).padStart(2,'0')}`;
+  CHANNELS.forEach(ch => buildCard(ch, grid));
+}
+
+function buildCard(ch, grid) {
+  // Resolve static thumb src (custom path takes priority over thumbId)
+  const staticSrc = ch.thumb
+    ? ch.thumb
+    : ch.thumbId
+      ? ytThumb(ch.thumbId, 'hqdefault')
+      : null;
+
+  const card = document.createElement('a');
+  card.className      = 'ch-card' + (ch.featured ? ' featured' : '');
+  card.href           = ch.href;
+  card.dataset.chNum  = ch.num;
+  card.setAttribute('role', 'listitem');
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('aria-label', `Channel ${ch.num}: ${ch.name}`);
+
+  card.innerHTML = `
+    <div class="ch-thumb">
+      ${staticSrc
+        ? `<img class="ch-thumb-static" src="${staticSrc}" alt="${ch.name}" loading="lazy">`
+        : ''}
+      <img class="ch-thumb-live" alt="" aria-hidden="true">
+      <div class="ch-thumb-fb"${staticSrc ? ' style="display:none"' : ''}>
+        <div class="ch-thumb-fb-num">${String(ch.num).padStart(2,'0')}</div>
+      </div>
+      <div class="ch-live${ch.live ? '' : ' off'}">LIVE</div>
+      <div class="ch-on-air">ON AIR</div>
+      <div class="ch-num-overlay">CH ${String(ch.num).padStart(2,'0')}</div>
+      <div class="ch-np">
+        <div class="ch-np-label">Now Playing</div>
+        <div class="ch-np-text loading" data-np>···</div>
+      </div>
+    </div>
+    <div class="ch-meta">
+      <div class="ch-num">${String(ch.num).padStart(2,'0')}</div>
+      <div class="ch-info">
+        <div class="ch-name">${ch.name}</div>
+        <div class="ch-desc">${ch.desc}</div>
+        ${ch.tag ? `<div class="ch-tag">${ch.tag}</div>` : ''}
+      </div>
+    </div>
+  `;
+
+  // Static thumb error → show fallback plate
+  const staticImg = card.querySelector('.ch-thumb-static');
+  const fb        = card.querySelector('.ch-thumb-fb');
+  if (staticImg) {
+    staticImg.addEventListener('error', () => {
+      staticImg.style.display = 'none';
+      fb.style.display = '';
+    });
+  }
+
+  // Live thumb on hover — lazy loaded on first mouseenter
+  const liveImg = card.querySelector('.ch-thumb-live');
+  let liveLoaded  = false;
+  // liveVideoId starts as thumbId, then gets overridden by now-playing resolve
+  let liveVideoId = ch.thumbId;
+
+  card.addEventListener('mouseenter', () => {
+    if (liveLoaded || !liveVideoId) return;
+    liveLoaded = true;
+    loadYtThumb(liveImg, liveVideoId, ok => {
+      if (ok) liveImg.classList.add('ready');
+    });
+  });
+
+  grid.appendChild(card);
+  cardMap[ch.num] = card;
+
+  // Resolve now-playing async
+  resolveNowPlaying(ch).then(result => {
+    const npEl = card.querySelector('[data-np]');
+    if (!npEl) return;
+
+    if (!ch.nowPlaying) {
+      npEl.textContent = '—';
+      npEl.classList.remove('loading');
+      return;
+    }
+
+    if (result?.text) {
+      npEl.textContent = result.text;
+      npEl.classList.remove('loading');
+    } else {
+      npEl.textContent = 'signal lost';
+      npEl.classList.remove('loading');
+      npEl.classList.add('error');
+    }
+
+    // Use the live video ID for hover thumb (more accurate than a fixed thumbId)
+    if (result?.videoId) {
+      liveVideoId = result.videoId;
+      // For CH1 (featured), also update static thumb to current live frame
+      if (ch.featured && staticImg) {
+        const liveSrc = ytThumb(result.videoId, 'hqdefault');
+        if (staticImg.src !== liveSrc) staticImg.src = liveSrc;
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  HERO STRIP — now playing on featured channel
+// ══════════════════════════════════════════════════════════════════
+async function updateHeroStrip() {
+  const featured = CHANNELS.find(c => c.featured) || CHANNELS[0];
+  document.getElementById('hs-ch').textContent = `CH ${String(featured.num).padStart(2,'0')} / Now Playing`;
+  const result = await resolveNowPlaying(featured);
+  if (!result?.text) return;
+  const p = parseTitle(result.text);
+  document.getElementById('hs-track').textContent = p.artist || result.text;
+  document.getElementById('hs-ctx').textContent   = p.context || '';
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  REFRESH — re-resolve now-playing on all cards without full rebuild
+// ══════════════════════════════════════════════════════════════════
+function refreshNowPlaying() {
+  CHANNELS.forEach(ch => {
+    const card = cardMap[ch.num];
+    if (!card) return;
+    const npEl = card.querySelector('[data-np]');
+    if (!npEl) return;
+    npEl.textContent = '···';
+    npEl.classList.add('loading');
+    npEl.classList.remove('error');
+    resolveNowPlaying(ch).then(result => {
+      if (result?.text) {
+        npEl.textContent = result.text;
+        npEl.classList.remove('loading');
+      } else {
+        npEl.textContent = ch.nowPlaying ? 'signal lost' : '—';
+        npEl.classList.remove('loading');
+        if (ch.nowPlaying) npEl.classList.add('error');
+      }
+    });
+  });
+  updateHeroStrip();
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CLOCK
+// ══════════════════════════════════════════════════════════════════
 function tick() {
   const n = new Date();
   document.getElementById('clock').textContent =
     [n.getHours(), n.getMinutes(), n.getSeconds()]
     .map(x => String(x).padStart(2,'0')).join(':');
 }
-setInterval(tick, 1000); tick();
+setInterval(tick, 1000);
+tick();
 
-// Refresh hero strip every 30s (track may have changed)
-setInterval(updateHeroStrip, 30000);
+// Refresh now-playing every 60s (tracks are typically 3–15 min)
+setInterval(refreshNowPlaying, 60_000);
 
-// ── INIT ───────────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────────
 buildGrid();
 updateHeroStrip();
-buildSchedule();
 </script>
 </body>
 </html>
