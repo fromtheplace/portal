@@ -166,12 +166,16 @@ body::after {
 /* TUNE-IN GATE — real click needed to unblock browser audio policy */
 #tune-gate {
   position: absolute; inset: 0; z-index: 10;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  display: none;
+  flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   background: rgba(10,9,6,0.85);
   cursor: pointer;
-  transition: opacity 0.45s ease;
 }
-#tune-gate.hidden { opacity: 0; pointer-events: none; }
+#tune-gate.visible {
+  display: flex;
+  animation: gate-in 0.3s ease forwards;
+}
+@keyframes gate-in { from { opacity: 0; } to { opacity: 1; } }
 .tg-ch {
   font-family: var(--font-disp); font-size: 80px;
   color: var(--text-lo); line-height: 1; letter-spacing: -4px; user-select: none;
@@ -336,7 +340,7 @@ kbd { display: inline-block; border: 1px solid var(--border-hi); padding: 1px 4p
       <div id="player-vignette"></div>
 
       <!-- Tune-in gate — requires real click to satisfy browser autoplay policy -->
-      <div id="tune-gate" class="hidden" onclick="tuneIn()">
+      <div id="tune-gate" onclick="tuneIn()">
         <div class="tg-ch" id="tg-ch">01</div>
         <div class="tg-name" id="tg-name">FTP LIVE</div>
         <div class="tg-cta">Click to tune in</div>
@@ -532,13 +536,12 @@ function tuneIn() {
 }
 
 function showTuneGate(ch) {
-  const gate = document.getElementById('tune-gate');
   document.getElementById('tg-ch').textContent   = String(ch.num).padStart(2,'0');
   document.getElementById('tg-name').textContent = ch.name;
-  gate.classList.remove('hidden');
+  document.getElementById('tune-gate').classList.add('visible');
 }
 function hideTuneGate() {
-  document.getElementById('tune-gate').classList.add('hidden');
+  document.getElementById('tune-gate').classList.remove('visible');
 }
 
 function syncToLive() {
