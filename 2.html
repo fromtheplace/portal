@@ -123,12 +123,13 @@ body::after {
   display: block;
   padding-top: 56.25%;
 }
-/* YT player — absolute fill */
+/* YT player — absolute fill, above placeholder */
 #yt-player {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100%;
   height: 100%;
+  z-index: 2;
 }
 /* YT injects an iframe; make sure it fills #yt-player */
 #yt-player > iframe {
@@ -143,11 +144,12 @@ body::after {
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100%; height: 100%; border: none;
   display: none;
+  z-index: 2;
 }
 
-/* Placeholder */
+/* Placeholder — sits below video layers, shown only when no channel playing */
 #player-placeholder {
-  position: absolute; inset: 0; z-index: 5;
+  position: absolute; inset: 0; z-index: 1;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   background: #000;
 }
@@ -307,7 +309,7 @@ kbd { display: inline-block; border: 1px solid var(--border-hi); padding: 1px 4p
       <div id="yt-player"></div>
       <iframe id="ext-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
       <div id="player-vignette"></div>
-      <div id="player-placeholder">
+      <div id="player-placeholder" class="hidden">
         <div class="ph-num" id="ph-num">01</div>
         <div class="ph-label">Select a channel</div>
       </div>
@@ -363,8 +365,7 @@ kbd { display: inline-block; border: 1px solid var(--border-hi); padding: 1px 4p
 //    { type:'static', text }         — fixed string
 //    null                            — nothing shown
 // ══════════════════════════════════════════════════════════════════
-const CHANNELS = [
-  {
+ {
     num:      1,
     name:     'FTP LIVE',
     tag:      'LIVE BROADCAST',
@@ -702,9 +703,6 @@ function tuneToIndex(i) {
     document.querySelectorAll('.ch-tile').forEach((t,idx) => t.classList.toggle('active', idx===i));
     activeIndex = i; activeCh = ch;
 
-    // hide placeholder initially (re-shown for placeholder channels)
-    document.getElementById('player-placeholder').classList.add('hidden');
-
     // reset clip bar
     document.getElementById('clip-bar').style.width = '0%';
 
@@ -727,11 +725,13 @@ function tuneToIndex(i) {
 }
 
 function showYT() {
+  document.getElementById('player-placeholder').classList.add('hidden');
   document.getElementById('yt-player').style.display = '';
   document.getElementById('ext-iframe').src = 'about:blank';
   document.getElementById('ext-iframe').style.display = 'none';
 }
 function showIframe(src) {
+  document.getElementById('player-placeholder').classList.add('hidden');
   if (player && playerReady) { try { player.stopVideo(); } catch(e){} clearInterval(progressTimer); }
   document.getElementById('yt-player').style.display = 'none';
   const f = document.getElementById('ext-iframe');
@@ -742,8 +742,7 @@ function showPlaceholder(ch) {
   document.getElementById('yt-player').style.display = 'none';
   document.getElementById('ext-iframe').src = 'about:blank';
   document.getElementById('ext-iframe').style.display = 'none';
-  const ph = document.getElementById('player-placeholder');
-  ph.classList.remove('hidden');
+  document.getElementById('player-placeholder').classList.remove('hidden');
   document.getElementById('ph-num').textContent = String(ch.num).padStart(2,'0');
 }
 
