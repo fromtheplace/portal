@@ -163,6 +163,31 @@ body::after {
   background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%);
 }
 
+/* TUNE-IN GATE — real click needed to unblock browser audio policy */
+#tune-gate {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: rgba(10,9,6,0.85);
+  cursor: pointer;
+  transition: opacity 0.45s ease;
+}
+#tune-gate.hidden { opacity: 0; pointer-events: none; }
+.tg-ch {
+  font-family: var(--font-disp); font-size: 80px;
+  color: var(--text-lo); line-height: 1; letter-spacing: -4px; user-select: none;
+}
+.tg-name {
+  font-family: var(--font-cond); font-weight: 700; font-size: 13px;
+  letter-spacing: 0.12em; color: var(--text-dim); text-transform: uppercase;
+}
+.tg-cta {
+  font-family: var(--font-mono); font-size: 8px;
+  letter-spacing: 0.35em; color: var(--amber); text-transform: uppercase;
+  border: 1px solid var(--amber-dim); padding: 6px 20px; margin-top: 6px;
+  animation: tg-blink 2.2s step-end infinite;
+}
+@keyframes tg-blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
 /* CLIP PROGRESS */
 #clip-bar-wrap { height: 2px; background: var(--border); flex-shrink: 0; }
 #clip-bar { height: 100%; width: 0%; background: var(--amber); box-shadow: 0 0 8px rgba(200,148,58,0.35); transition: width 0.5s linear; }
@@ -309,6 +334,13 @@ kbd { display: inline-block; border: 1px solid var(--border-hi); padding: 1px 4p
       <div id="yt-player"></div>
       <iframe id="ext-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
       <div id="player-vignette"></div>
+
+      <!-- Tune-in gate — requires real click to satisfy browser autoplay policy -->
+      <div id="tune-gate" class="hidden" onclick="tuneIn()">
+        <div class="tg-ch" id="tg-ch">01</div>
+        <div class="tg-name" id="tg-name">FTP LIVE</div>
+        <div class="tg-cta">Click to tune in</div>
+      </div>
       <div id="player-placeholder" class="hidden">
         <div class="ph-num" id="ph-num">01</div>
         <div class="ph-label">Select a channel</div>
@@ -365,7 +397,7 @@ kbd { display: inline-block; border: 1px solid var(--border-hi); padding: 1px 4p
 //    { type:'static', text }         — fixed string
 //    null                            — nothing shown
 // ══════════════════════════════════════════════════════════════════
- const CHANNELS = [
+const CHANNELS = [
   {
     num:      1,
     name:     'FTP LIVE',
@@ -403,7 +435,7 @@ kbd { display: inline-block; border: 1px solid var(--border-hi); padding: 1px 4p
     href:     'https://fromtheplace.github.io/ftptv/',
     featured: false,
     thumb:    null,           // e.g. 'images/ohhh-cover.jpg'
-    thumbId:  'xX6NIpgr8WA',
+    thumbId:  null,
     nowPlaying: {
       type:    'fetchjs',
       url:     'https://fromtheplace.github.io/ftptv/FTP_MEGA.js',
@@ -457,14 +489,14 @@ function parseTitle(title) {
   return { artist: parts[0].trim(), context: parts.slice(1).join(sep).replace(/\[.*?\]/g,'').replace(/#\w+/g,'').trim() };
 }
 
-// YT player state — mirrors channel.html exactly
+// YT player state
 let player = null, playerReady = false, hasTunedIn = false;
 let _muted = true, progressTimer = null;
 let videoIndex = 0, clipDuration = 0, clipEndAt = 0, pendingSeek = null, advancing = false;
 
 function fmt(s) { s=Math.max(0,Math.floor(s)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
 
-// Boot YT API — identical to channel.html
+// Boot YT API
 (function(){ const t=document.createElement('script'); t.src='https://www.youtube.com/iframe_api'; document.head.appendChild(t); })();
 
 window.onYouTubeIframeAPIReady = function() {
@@ -477,11 +509,36 @@ window.onYouTubeIframeAPIReady = function() {
 
 function onPlayerReady() {
   playerReady = true;
-  // If CH1 already selected (auto-tune fired before API loaded), sync now
-  if (activeCh?.type === 'ftpengine') {
-    syncToLive();
-    if (hasTunedIn) unmute();
+  // Auto-tune fired before API ready — load the track now (still muted, gate visible)
+  if (activeCh?.type === 'ftpengine') syncToLive();
+}
+
+// Called by clicking the tune-gate overlay — the only place audio is unlocked.
+// Browser requires a direct user gesture on the page to allow audio.
+function tuneIn() {
+  if (!playerReady || !player) return;
+  hasTunedIn = true;
+  hideTuneGate();
+  player.unMute();
+  player.setVolume(80);
+  _muted = false;
+  document.getElementById('mute-btn').textContent = '🔊 MUTE';
+  // If player already has a video cued/playing, just unmute — it's already running.
+  // If not yet started (rare), force play.
+  const state = player.getPlayerState();
+  if (state === YT.PlayerState.CUED || state === YT.PlayerState.PAUSED || state === -1) {
+    player.playVideo();
   }
+}
+
+function showTuneGate(ch) {
+  const gate = document.getElementById('tune-gate');
+  document.getElementById('tg-ch').textContent   = String(ch.num).padStart(2,'0');
+  document.getElementById('tg-name').textContent = ch.name;
+  gate.classList.remove('hidden');
+}
+function hideTuneGate() {
+  document.getElementById('tune-gate').classList.add('hidden');
 }
 
 function syncToLive() {
@@ -503,11 +560,23 @@ function loadTrack(index, seekOffset) {
 
 function onStateChange(e) {
   const S = YT.PlayerState;
-  if (e.data === S.CUED)     { if (pendingSeek!==null){ player.seekTo(pendingSeek,true); pendingSeek=null; } player.playVideo(); }
-  if (e.data === S.BUFFERING){ if (pendingSeek!==null){ player.seekTo(pendingSeek,true); pendingSeek=null; } }
-  if (e.data === S.PLAYING)  { if (pendingSeek!==null){ const t=pendingSeek; pendingSeek=null; if(Math.abs(player.getCurrentTime()-t)>2) player.seekTo(t,true); } startProgress(); }
-  if (e.data === S.PAUSED)   { clearInterval(progressTimer); }
-  if (e.data === S.ENDED)    { clearInterval(progressTimer); advance(); }
+  if (e.data === S.CUED) {
+    if (pendingSeek !== null) { player.seekTo(pendingSeek, true); pendingSeek = null; }
+    // Only auto-play if user has already clicked tune-in (audio unlocked)
+    if (hasTunedIn) player.playVideo();
+  }
+  if (e.data === S.BUFFERING) {
+    if (pendingSeek !== null) { player.seekTo(pendingSeek, true); pendingSeek = null; }
+  }
+  if (e.data === S.PLAYING) {
+    if (pendingSeek !== null) {
+      const t = pendingSeek; pendingSeek = null;
+      if (Math.abs(player.getCurrentTime() - t) > 2) player.seekTo(t, true);
+    }
+    startProgress();
+  }
+  if (e.data === S.PAUSED) { clearInterval(progressTimer); }
+  if (e.data === S.ENDED)  { clearInterval(progressTimer); advance(); }
 }
 function onError(e) { console.warn('YT error', e.data); advance(); }
 
@@ -522,8 +591,7 @@ function startProgress() {
   progressTimer = setInterval(() => {
     if (!player || !playerReady) return;
     const cur   = player.getCurrentTime();
-    const track = PLAYLIST[videoIndex];
-    if (!track) return;
+    const track = PLAYLIST[videoIndex]; if (!track) return;
     const elapsed = Math.max(0, cur - track.start);
     const pct     = clipDuration > 0 ? Math.min(100, (elapsed / clipDuration) * 100) : 0;
     document.getElementById('clip-bar').style.width = pct.toFixed(1) + '%';
@@ -534,9 +602,7 @@ function startProgress() {
 function updateNowPlaying(track) {
   const p = parseTitle(track.title);
   setNpBar(String(activeCh.num).padStart(2,'0'), p.artist, p.context || activeCh.name, true, activeCh.desc);
-  // update tile now-playing text
   setTileNp(activeCh.num, p.artist + (p.context ? ' — ' + p.context : ''));
-  // update live thumb videoId → current track
   setTileLiveId(activeCh.num, track.id);
 }
 
@@ -547,7 +613,8 @@ function unmute() {
 }
 function toggleMute() {
   if (!player) return;
-  if (_muted) unmute(); else { player.mute(); _muted = true; document.getElementById('mute-btn').textContent = '🔇 MUTE'; }
+  if (_muted) { unmute(); }
+  else { player.mute(); _muted = true; document.getElementById('mute-btn').textContent = '🔇 MUTE'; }
 }
 function toggleFullscreen() {
   if (!document.fullscreenElement) document.documentElement.requestFullscreen();
@@ -709,9 +776,9 @@ function tuneToIndex(i) {
 
     if (ch.type === 'ftpengine') {
       showYT();
-      hasTunedIn = true;
-      if (playerReady) { syncToLive(); unmute(); }
-      else setNpBar(String(ch.num).padStart(2,'0'),'Loading…',ch.name,ch.live,ch.desc);
+      showTuneGate(ch);
+      if (playerReady) syncToLive();
+      // hasTunedIn stays false until user clicks gate
     }
     else if (ch.type === 'iframe' && ch.src) {
       showIframe(ch.src);
@@ -732,6 +799,7 @@ function showYT() {
   document.getElementById('ext-iframe').style.display = 'none';
 }
 function showIframe(src) {
+  hideTuneGate();
   document.getElementById('player-placeholder').classList.add('hidden');
   if (player && playerReady) { try { player.stopVideo(); } catch(e){} clearInterval(progressTimer); }
   document.getElementById('yt-player').style.display = 'none';
@@ -739,6 +807,7 @@ function showIframe(src) {
   f.style.display = ''; f.src = src;
 }
 function showPlaceholder(ch) {
+  hideTuneGate();
   if (player && playerReady) { try { player.stopVideo(); } catch(e){} clearInterval(progressTimer); }
   document.getElementById('yt-player').style.display = 'none';
   document.getElementById('ext-iframe').src = 'about:blank';
