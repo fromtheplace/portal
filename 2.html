@@ -402,35 +402,49 @@ kbd { display: inline-block; border: 1px solid var(--border-hi); padding: 1px 4p
 //    null                            — nothing shown
 // ══════════════════════════════════════════════════════════════════
 const CHANNELS = [
- 
   {
-    num:      1,
-    name:     'FTP LIVE',
-    tag:      'LIVE BROADCAST',
-    desc:     'Ōtepoti Music Television — continuous live stream',
-    live:     true,
-    thumb:    null,
-    thumbId:  null,        // set at runtime from live playlist
-    nowPlaying: { type: 'ftpengine', playlist: null }, // filled after script loads
+    num:     1,
+    name:    'FTP LIVE',
+    tag:     'LIVE BROADCAST',
+    desc:    'Ōtepoti Music Television — continuous live stream',
+    live:    true,
+    type:    'ftpengine',
+    thumb:   null,
+    thumbId: null,
+    nowPlaying: { type: 'ftpengine', playlist: null },
   },
   {
-    num:      2,
-    name:     'NOOK & CRANNY',
-    tag:      'LIVE',
-    desc:     'Nook & Cranny TV — Ōtepoti',
-    live: true, type: 'iframe',
-    src: 'https://fromtheplace.github.io/nooktv/',
-    thumb: null, thumbId: null,
-    nowPlaying: { type: 'fetchjs', url: 'https://fromtheplace.github.io/nooktv/NOOK_MEGA.js', varName: 'videoPlaylist' },
+    num:     2,
+    name:    'NOOK & CRANNY',
+    tag:     'LIVE',
+    desc:    'Nook & Cranny TV — Ōtepoti',
+    live:    true,
+    type:    'iframe',
+    src:     'https://fromtheplace.github.io/nooktv/',
+    thumb:   null,
+    thumbId: null,
+    nowPlaying: {
+      type:    'fetchjs',
+      url:     'https://fromtheplace.github.io/nooktv/NOOK_MEGA.js',
+      varName: 'videoPlaylist',
     },
+  },
   {
-       num: 3, name: 'ŌHHH ARCHIVE', tag: 'ARCHIVE',
-    desc: 'Full sets from ŌHHH events 2022–2024.',
-    live: false, type: 'placeholder',
-    thumb: null, thumbId: 'xX6NIpgr8WA',
-    nowPlaying: { type: 'static', text: 'ŌHHH 2022–2024' },
-  
+    num:     3,
+    name:    'FTPtv2',
+    tag:     'ARCHIVE',
+    desc:    'Full sets',
+    live:    true,
+    type:    'iframe',
+    src:     'https://fromtheplace.github.io/ftptv/',
+    thumb:   null,
+    thumbId: null,
+    nowPlaying: {
+      type:    'fetchjs',
+      url:     'https://fromtheplace.github.io/ftptv/FTP_MEGA.js',
+      varName: 'videoPlaylist',
     },
+  },
 ];
 
 // Wire CH1 playlist
