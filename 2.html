@@ -419,15 +419,11 @@ const CHANNELS = [
     tag:     'LIVE',
     desc:    'Nook & Cranny TV — Ōtepoti',
     live:    true,
-    type:    'ftpengine',
+    type:    'iframe',
     src:     'https://fromtheplace.github.io/nooktv/',
     thumb:   null,
     thumbId: null,
-    nowPlaying: {
-      type:    'fetchjs',
-      url:     'https://fromtheplace.github.io/nooktv/NOOK_MEGA.js',
-      varName: 'videoPlaylist',
-    },
+    nowPlaying: { type: 'fetchjs', url: 'https://fromtheplace.github.io/nooktv/NOOK_MEGA.js', varName: 'videoPlaylist' },
   },
   {
     num:     3,
@@ -439,11 +435,7 @@ const CHANNELS = [
     src:     'https://fromtheplace.github.io/ftptv/',
     thumb:   null,
     thumbId: null,
-    nowPlaying: {
-      type:    'fetchjs',
-      url:     'https://fromtheplace.github.io/ftptv/FTP_MEGA.js',
-      varName: 'videoPlaylist',
-    },
+    nowPlaying: { type: 'fetchjs', url: 'https://fromtheplace.github.io/ftptv/FTP_MEGA.js', varName: 'videoPlaylist' },
   },
 ];
 
@@ -519,18 +511,22 @@ function onPlayerReady() {
 // Called by clicking the tune-gate overlay — the only place audio is unlocked.
 // Browser requires a direct user gesture on the page to allow audio.
 function tuneIn() {
-  if (!playerReady || !player) return;
-  hasTunedIn = true;
   hideTuneGate();
-  player.unMute();
-  player.setVolume(80);
-  _muted = false;
-  document.getElementById('mute-btn').textContent = '🔊 MUTE';
-  // If player already has a video cued/playing, just unmute — it's already running.
-  // If not yet started (rare), force play.
-  const state = player.getPlayerState();
-  if (state === YT.PlayerState.CUED || state === YT.PlayerState.PAUSED || state === -1) {
-    player.playVideo();
+
+  if (activeCh?.type === 'ftpengine') {
+    if (!playerReady || !player) return;
+    hasTunedIn = true;
+    player.unMute();
+    player.setVolume(80);
+    _muted = false;
+    document.getElementById('mute-btn').textContent = '🔊 MUTE';
+    const state = player.getPlayerState();
+    if (state === YT.PlayerState.CUED || state === YT.PlayerState.PAUSED || state === -1) {
+      player.playVideo();
+    }
+  }
+  else if (activeCh?.type === 'iframe') {
+    showIframe(activeCh.src);
   }
 }
 
@@ -780,11 +776,12 @@ function tuneToIndex(i) {
       showYT();
       showTuneGate(ch);
       if (playerReady) syncToLive();
-      // hasTunedIn stays false until user clicks gate
     }
     else if (ch.type === 'iframe' && ch.src) {
-      showIframe(ch.src);
-      setNpBar(String(ch.num).padStart(2,'0'), ch.name, ch.live?'LIVE':'ON DEMAND', ch.live, ch.desc);
+      // Show gate first — clicking loads the iframe (avoids autoplaying embedded audio)
+      showYT(); // hide placeholder, keep yt-player div present but will hide after click
+      showTuneGate(ch);
+      setNpBar(String(ch.num).padStart(2,'0'), ch.name, 'LIVE', ch.live, ch.desc);
       resolveNowPlaying(ch).then(r => { if(r?.text) setNpBar(String(ch.num).padStart(2,'0'), r.text, ch.name, ch.live, ch.desc); });
     }
     else {
@@ -801,10 +798,9 @@ function showYT() {
   document.getElementById('ext-iframe').style.display = 'none';
 }
 function showIframe(src) {
-  hideTuneGate();
   document.getElementById('player-placeholder').classList.add('hidden');
-  if (player && playerReady) { try { player.stopVideo(); } catch(e){} clearInterval(progressTimer); }
   document.getElementById('yt-player').style.display = 'none';
+  if (player && playerReady) { try { player.stopVideo(); } catch(e){} clearInterval(progressTimer); }
   const f = document.getElementById('ext-iframe');
   f.style.display = ''; f.src = src;
 }
