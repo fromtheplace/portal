@@ -124,18 +124,25 @@ body::after {
   padding-top: 56.25%;
 }
 /* YT player — absolute fill, above placeholder */
-#yt-player {
+/* yt-player-wrap is the stable show/hide target.
+   YT.Player() destroys #yt-player and replaces it with an iframe —
+   so we never touch #yt-player for display after init. */
+#yt-player-wrap {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   z-index: 2;
 }
-/* YT injects an iframe; make sure it fills #yt-player */
-#yt-player > iframe {
+#yt-player {
+  width: 100%;
+  height: 100%;
+}
+/* YT injects an iframe into #yt-player-wrap after replacing #yt-player */
+#yt-player-wrap iframe {
   position: absolute !important;
   top: 0 !important; left: 0 !important;
   width: 100% !important; height: 100% !important;
+  border: none;
 }
 
 /* External channel iframe (NookTV etc) */
@@ -333,9 +340,12 @@ kbd { display: inline-block; border: 1px solid var(--border-hi); padding: 1px 4p
   <!-- PLAYER ZONE -->
   <section id="player-zone">
     <div id="player-clip">
-      <!-- YT API replaces this div with an iframe.
-           The div is position:absolute so it has real pixel dimensions. -->
-      <div id="yt-player"></div>
+      <!-- yt-player-wrap is the stable element we show/hide.
+           YT.Player replaces #yt-player div with an iframe, so we
+           never target #yt-player for display — only the wrapper. -->
+      <div id="yt-player-wrap">
+        <div id="yt-player"></div>
+      </div>
       <iframe id="ext-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
       <div id="player-vignette"></div>
 
@@ -831,13 +841,13 @@ function tuneToIndex(i) {
 
 function showYT() {
   document.getElementById('player-placeholder').classList.add('hidden');
-  document.getElementById('yt-player').style.display = '';
+  document.getElementById('yt-player-wrap').style.display = '';
   document.getElementById('ext-iframe').src = 'about:blank';
   document.getElementById('ext-iframe').style.display = 'none';
 }
 function showIframe(src) {
   document.getElementById('player-placeholder').classList.add('hidden');
-  document.getElementById('yt-player').style.display = 'none';
+  document.getElementById('yt-player-wrap').style.display = 'none';
   if (player && playerReady) { try { player.stopVideo(); } catch(e){} clearInterval(progressTimer); }
   const f = document.getElementById('ext-iframe');
   f.style.display = ''; f.src = src;
@@ -845,7 +855,7 @@ function showIframe(src) {
 function showPlaceholder(ch) {
   hideTuneGate();
   if (player && playerReady) { try { player.stopVideo(); } catch(e){} clearInterval(progressTimer); }
-  document.getElementById('yt-player').style.display = 'none';
+  document.getElementById('yt-player-wrap').style.display = 'none';
   document.getElementById('ext-iframe').src = 'about:blank';
   document.getElementById('ext-iframe').style.display = 'none';
   document.getElementById('player-placeholder').classList.remove('hidden');
