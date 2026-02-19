@@ -31,6 +31,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-mono); font-size: 13px; overflow: hidden; }
 
+.ytp-watermark,.ytp-ce-element, .ytp-pause-overlay-container,.ytp-chrome-top,.ytp-chrome-top-buttons,.ytp-gradient-top {display:none;}
+  
 /* scanlines */
 body::before {
   content: ''; position: fixed; inset: 0; z-index: 9000; pointer-events: none;
