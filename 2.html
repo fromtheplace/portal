@@ -408,9 +408,10 @@ const CHANNELS = [
     tag:     'LIVE BROADCAST',
     desc:    'Ōtepoti Music Television — continuous live stream',
     live:    true,
-    type:    'ftpengine',
-    thumb:   null,
-    thumbId: null,
+    type:    'fetchjs',
+    playlistUrl: null,   // null = use local FTP_MEGA.js already on page
+    varName: 'videoPlaylist',
+    thumb:   null, thumbId: null,
     nowPlaying: { type: 'ftpengine', playlist: null },
   },
   {
@@ -419,10 +420,10 @@ const CHANNELS = [
     tag:     'LIVE',
     desc:    'Nook & Cranny TV — Ōtepoti',
     live:    true,
-    type:    'iframe',
-    src:     'https://fromtheplace.github.io/nooktv/',
-    thumb:   null,
-    thumbId: null,
+    type:    'fetchjs',
+    playlistUrl: 'https://fromtheplace.github.io/nooktv/NOOK_MEGA.js',
+    varName: 'videoPlaylist',
+    thumb:   null, thumbId: null,
     nowPlaying: { type: 'fetchjs', url: 'https://fromtheplace.github.io/nooktv/NOOK_MEGA.js', varName: 'videoPlaylist' },
   },
   {
@@ -431,16 +432,18 @@ const CHANNELS = [
     tag:     'ARCHIVE',
     desc:    'Full sets',
     live:    true,
-    type:    'iframe',
-    src:     'https://fromtheplace.github.io/ftptv/',
-    thumb:   null,
-    thumbId: null,
+    type:    'fetchjs',
+    playlistUrl: 'https://fromtheplace.github.io/ftptv/FTP_MEGA.js',
+    varName: 'videoPlaylist',
+    thumb:   null, thumbId: null,
     nowPlaying: { type: 'fetchjs', url: 'https://fromtheplace.github.io/ftptv/FTP_MEGA.js', varName: 'videoPlaylist' },
   },
 ];
 
-// Wire CH1 playlist
+// Wire CH1 local playlist (already loaded via FTP_MEGA.js script tag)
 CHANNELS[0].nowPlaying.playlist = videoPlaylist;
+CHANNELS[0]._loadedPlaylist     = videoPlaylist;
+activePlaylist                  = videoPlaylist;
 
 // ══════════════════════════════════════════════════════════════════
 //  FTP LIVE ENGINE  — copied verbatim from channel.html (proven working)
@@ -504,29 +507,39 @@ window.onYouTubeIframeAPIReady = function() {
 
 function onPlayerReady() {
   playerReady = true;
-  // Auto-tune fired before API ready — load the track now (still muted, gate visible)
-  if (activeCh?.type === 'ftpengine') syncToLive();
+  if (activeCh?.type === 'fetchjs' && activeCh._loadedPlaylist) {
+    activePlaylist = activeCh._loadedPlaylist;
+    syncToLive(activePlaylist);
+  }
 }
 
 // Called by clicking the tune-gate overlay — the only place audio is unlocked.
 // Browser requires a direct user gesture on the page to allow audio.
 function tuneIn() {
   hideTuneGate();
+  if (!activeCh) return;
 
-  if (activeCh?.type === 'ftpengine') {
+  if (activeCh.type === 'fetchjs') {
     if (!playerReady || !player) return;
     hasTunedIn = true;
     player.unMute();
     player.setVolume(80);
     _muted = false;
     document.getElementById('mute-btn').textContent = '🔊 MUTE';
+
+    const pl = activeCh._loadedPlaylist;
+    if (!pl || !pl.length) {
+      // Playlist not loaded yet — wait for it
+      setNpBar(String(activeCh.num).padStart(2,'0'), 'Buffering…', activeCh.name, activeCh.live, activeCh.desc);
+      return;
+    }
+    activePlaylist = pl;
     const state = player.getPlayerState();
     if (state === YT.PlayerState.CUED || state === YT.PlayerState.PAUSED || state === -1) {
+      syncToLive(pl);
+    } else {
       player.playVideo();
     }
-  }
-  else if (activeCh?.type === 'iframe') {
-    showIframe(activeCh.src);
   }
 }
 
@@ -539,21 +552,26 @@ function hideTuneGate() {
   document.getElementById('tune-gate').classList.remove('visible');
 }
 
-function syncToLive() {
-  const { index, seekOffset } = getLivePosition();
+// Active playlist — switches when channel changes
+let activePlaylist = PLAYLIST; // default to local FTP_MEGA
+
+function syncToLive(playlist) {
+  playlist = playlist || activePlaylist;
+  const { index, seekOffset } = getLivePositionFor(playlist);
   videoIndex = index;
-  loadTrack(index, seekOffset);
+  loadTrack(index, seekOffset, playlist);
 }
 
-function loadTrack(index, seekOffset) {
-  if (!playerReady || !player || !PLAYLIST.length) return;
-  const track = PLAYLIST[index]; if (!track) return;
+function loadTrack(index, seekOffset, playlist) {
+  playlist = playlist || activePlaylist;
+  if (!playerReady || !player || !playlist.length) return;
+  const track = playlist[index]; if (!track) return;
   advancing = false; clearInterval(progressTimer);
   clipDuration = track.end - track.start;
   const startAt = track.start + (seekOffset || 0);
   clipEndAt = track.end; pendingSeek = startAt;
   player.cueVideoById({ videoId: track.id, startSeconds: startAt, endSeconds: track.end });
-  updateNowPlaying(track);
+  updateNowPlaying(track, playlist);
 }
 
 function onStateChange(e) {
@@ -581,7 +599,7 @@ function onError(e) { console.warn('YT error', e.data); advance(); }
 function advance() {
   if (advancing) return; advancing = true; clearInterval(progressTimer);
   doStatic();
-  setTimeout(() => { syncToLive(); }, 650);
+  setTimeout(() => { syncToLive(activePlaylist); }, 650);
 }
 
 function startProgress() {
@@ -589,7 +607,7 @@ function startProgress() {
   progressTimer = setInterval(() => {
     if (!player || !playerReady) return;
     const cur   = player.getCurrentTime();
-    const track = PLAYLIST[videoIndex]; if (!track) return;
+    const track = activePlaylist[videoIndex]; if (!track) return;
     const elapsed = Math.max(0, cur - track.start);
     const pct     = clipDuration > 0 ? Math.min(100, (elapsed / clipDuration) * 100) : 0;
     document.getElementById('clip-bar').style.width = pct.toFixed(1) + '%';
@@ -597,7 +615,7 @@ function startProgress() {
   }, 500);
 }
 
-function updateNowPlaying(track) {
+function updateNowPlaying(track, playlist) {
   const p = parseTitle(track.title);
   setNpBar(String(activeCh.num).padStart(2,'0'), p.artist, p.context || activeCh.name, true, activeCh.desc);
   setTileNp(activeCh.num, p.artist + (p.context ? ' — ' + p.context : ''));
@@ -772,17 +790,37 @@ function tuneToIndex(i) {
     // reset clip bar
     document.getElementById('clip-bar').style.width = '0%';
 
-    if (ch.type === 'ftpengine') {
+    if (ch.type === 'fetchjs') {
       showYT();
       showTuneGate(ch);
-      if (playerReady) syncToLive();
-    }
-    else if (ch.type === 'iframe' && ch.src) {
-      // Show gate first — clicking loads the iframe (avoids autoplaying embedded audio)
-      showYT(); // hide placeholder, keep yt-player div present but will hide after click
-      showTuneGate(ch);
-      setNpBar(String(ch.num).padStart(2,'0'), ch.name, 'LIVE', ch.live, ch.desc);
-      resolveNowPlaying(ch).then(r => { if(r?.text) setNpBar(String(ch.num).padStart(2,'0'), r.text, ch.name, ch.live, ch.desc); });
+      setNpBar(String(ch.num).padStart(2,'0'), 'Loading…', ch.name, ch.live, ch.desc);
+      // Fetch playlist in background while gate is showing
+      const fetchUrl = ch.playlistUrl;
+      const getPlaylist = fetchUrl
+        ? fetchRemotePlaylist(fetchUrl, ch.varName || 'videoPlaylist')
+        : Promise.resolve(PLAYLIST);
+      getPlaylist.then(pl => {
+        if (!pl || !pl.length) {
+          setNpBar(String(ch.num).padStart(2,'0'), 'Load failed', ch.name, ch.live, ch.desc);
+          return;
+        }
+        // Store playlist on the channel for tuneIn to use
+        ch._loadedPlaylist = pl;
+        // Update NP bar with current track info
+        const { index, seekOffset } = getLivePositionFor(pl);
+        const track = pl[index];
+        if (track) {
+          const p = parseTitle(track.title);
+          setNpBar(String(ch.num).padStart(2,'0'), p.artist, p.context || ch.name, ch.live, ch.desc);
+          setTileNp(ch.num, p.artist + (p.context ? ' — ' + p.context : ''));
+          setTileLiveId(ch.num, track.id);
+        }
+        // If player already ready and user already clicked gate, sync now
+        if (hasTunedIn && activeCh === ch && playerReady) {
+          activePlaylist = pl;
+          syncToLive(pl);
+        }
+      });
     }
     else {
       showPlaceholder(ch);
@@ -869,10 +907,10 @@ setInterval(() => {
       if(r?.videoId) setTileLiveId(ch.num, r.videoId);
     });
   });
-  // also refresh np bar if on live channel
-  if (activeCh?.type==='ftpengine' && playerReady) {
-    const track = PLAYLIST[videoIndex];
-    if(track) updateNowPlaying(track);
+  // Refresh np bar for active fetchjs channel
+  if (activeCh?.type === 'fetchjs' && playerReady && activePlaylist?.length) {
+    const track = activePlaylist[videoIndex];
+    if (track) updateNowPlaying(track);
   }
 }, 60_000);
 
