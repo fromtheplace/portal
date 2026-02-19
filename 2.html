@@ -323,7 +323,7 @@ kbd { display: inline-block; border: 1px solid var(--border-hi); padding: 1px 4p
 <!-- MASTHEAD -->
 <header id="masthead">
   <div class="mast-logo">
-    <img src="ftptv.png" alt="FTP TV">
+    <img src="images/ftptv.png" alt="FTP TV">
   </div>
   <div class="mast-center">
     <div class="mast-on-air"><div class="on-air-dot"></div><div class="on-air-text">Broadcasting</div></div>
@@ -393,7 +393,6 @@ kbd { display: inline-block; border: 1px solid var(--border-hi); padding: 1px 4p
 
 </div>
 
-<script src="FTP_MEGA.js"></script>
 <script>
 // ══════════════════════════════════════════════════════════════════
 //  CHANNEL DATA
@@ -419,10 +418,10 @@ const CHANNELS = [
     desc:    'Ōtepoti Music Television — continuous live stream',
     live:    true,
     type:    'fetchjs',
-    playlistUrl: null,   // null = use local FTP_MEGA.js already on page
+    playlistUrl: 'https://fromtheplace.github.io/ftptv/FTP_MEGA.js',
     varName: 'videoPlaylist',
     thumb:   null, thumbId: null,
-    nowPlaying: { type: 'ftpengine', playlist: null },
+    nowPlaying: { type: 'fetchjs', url: 'https://fromtheplace.github.io/ftptv/FTP_MEGA.js', varName: 'videoPlaylist' },
   },
   {
     num:     2,
@@ -450,30 +449,12 @@ const CHANNELS = [
   },
 ];
 
-// Wire CH1 local playlist (already loaded via FTP_MEGA.js script tag)
-CHANNELS[0].nowPlaying.playlist = videoPlaylist;
-CHANNELS[0]._loadedPlaylist     = videoPlaylist;
-activePlaylist                  = videoPlaylist;
+// All channels fetch their playlists remotely — no local videoPlaylist dependency.
+// activePlaylist is set when a channel is tuned and its playlist loads.
 
 // ══════════════════════════════════════════════════════════════════
-//  FTP LIVE ENGINE  — copied verbatim from channel.html (proven working)
+//  FTP LIVE ENGINE
 // ══════════════════════════════════════════════════════════════════
-const PLAYLIST      = videoPlaylist;
-const TOTAL_SECONDS = PLAYLIST.reduce((s,t) => s + Math.max(0, t.end - t.start), 0);
-
-function getLivePosition() {
-  const nowSec    = Math.floor(Date.now() / 1000);
-  const dayNumber = Math.floor(nowSec / 86400);
-  const dailySeed = Number((BigInt(dayNumber % TOTAL_SECONDS) * 3571n) % BigInt(TOTAL_SECONDS));
-  const posInCycle = ((nowSec % TOTAL_SECONDS) + dailySeed) % TOTAL_SECONDS;
-  let elapsed = 0;
-  for (let i = 0; i < PLAYLIST.length; i++) {
-    const clipLen = PLAYLIST[i].end - PLAYLIST[i].start;
-    if (posInCycle < elapsed + clipLen) return { index: i, seekOffset: posInCycle - elapsed };
-    elapsed += clipLen;
-  }
-  return { index: 0, seekOffset: 0 };
-}
 
 function getLivePositionFor(playlist) {
   const total = playlist.reduce((s,t) => s + Math.max(0, t.end - t.start), 0);
@@ -563,7 +544,7 @@ function hideTuneGate() {
 }
 
 // Active playlist — switches when channel changes
-let activePlaylist = PLAYLIST; // default to local FTP_MEGA
+let activePlaylist = [];
 
 function syncToLive(playlist) {
   playlist = playlist || activePlaylist;
@@ -808,7 +789,7 @@ function tuneToIndex(i) {
       const fetchUrl = ch.playlistUrl;
       const getPlaylist = fetchUrl
         ? fetchRemotePlaylist(fetchUrl, ch.varName || 'videoPlaylist')
-        : Promise.resolve(PLAYLIST);
+        : Promise.resolve([]);
       getPlaylist.then(pl => {
         if (!pl || !pl.length) {
           setNpBar(String(ch.num).padStart(2,'0'), 'Load failed', ch.name, ch.live, ch.desc);
