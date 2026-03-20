@@ -1181,16 +1181,57 @@ document.addEventListener('keydown', e => {
 // ── VOLUME ───────────────────────────────────────────────────────
 const volSlider=document.getElementById('vol-slider');
 const volIcon=document.getElementById('vol-icon');
-volSlider.addEventListener('input',()=>{
-  currentVolume=parseInt(volSlider.value);
-  if(ytPlayer?.setVolume) ytPlayer.setVolume(currentVolume);
-  volIcon.textContent=currentVolume===0?'🔇':currentVolume<50?'🔉':'🔊';
-});
-volIcon.addEventListener('click',()=>{
-  currentVolume=currentVolume>0?0:80; volSlider.value=currentVolume;
-  if(ytPlayer?.setVolume) ytPlayer.setVolume(currentVolume);
-  volIcon.textContent=currentVolume===0?'🔇':'🔊';
-});
+function applyVolume(v){
+  currentVolume = v;
+  volSlider.value = v;
+  volIcon.textContent = v===0?'🔇':v<50?'🔉':'🔊';
+  // send to srcdoc iframe — retry until contentWindow is ready
+  if(ytPlayer?._iframe){
+    const send = () => {
+      try { ytPlayer._iframe.contentWindow?.postMessage({cmd:'volume',value:v},'*'); }
+      catch(e){}
+    };
+    send();
+    // belt-and-suspenders: also send after short delay in case iframe was mid-load
+    setTimeout(send, 300);
+  }
+}
+volSlider.addEventListener('input',()=>applyVolume(parseInt(volSlider.value)));
+volIcon.addEventListener('click',()=>applyVolume(currentVolume>0?0:80));
+
+// ── WEIGHTED SHUFFLE ─────────────────────────────────────────────
+// Pick next track: weighted random favouring tracks not recently played.
+// Weight = 1 + (position in tbRecentOrder from the end, so least-recent = highest weight)
+// Tracks never played get maximum weight. Currently playing track is excluded.
+function pickShuffleNext(){
+  const pool = filteredIdxs.filter(({i})=>i!==currentIdx);
+  if(!pool.length) return -1;
+
+  // Build weights — higher = more likely to be picked
+  const orderPos = new Map(tbRecentOrder.map((idx,pos)=>[idx,pos]));
+  const total = tbRecentOrder.length || 1;
+
+  const weighted = pool.map(({i})=>{
+    const pos = orderPos.has(i) ? orderPos.get(i) : total; // never played = beyond end = highest
+    // recency penalty: recently played (pos=0) get weight 1, older/unplayed get up to total+1
+    const weight = (total - pos) + 1;
+    return {i, weight};
+  });
+
+  // Weighted random selection
+  const totalWeight = weighted.reduce((s,w)=>s+w.weight, 0);
+  let rand = Math.random() * totalWeight;
+  for(const w of weighted){
+    rand -= w.weight;
+    if(rand <= 0) return w.i;
+  }
+  return weighted[weighted.length-1].i;
+}
+
+function onTrackEnd(){
+  const next = pickShuffleNext();
+  if(next >= 0) playTrack(next);
+}
 
 // ══════════════════════════════════════════════════════════════════
 //  HELPERS
@@ -1710,10 +1751,17 @@ window.addEventListener('message', function(e){
   // Store reference — communicate via postMessage instead of YT API directly
   ytPlayer = {
     _iframe: iframe,
-    _send(cmd){ iframe.contentWindow?.postMessage(cmd,'*'); },
+    _send(cmd){
+      try { iframe.contentWindow?.postMessage(cmd,'*'); }
+      catch(e){}
+    },
     playVideo(){ this._send({cmd:'play'}); },
     pauseVideo(){ this._send({cmd:'pause'}); },
-    setVolume(v){ this._send({cmd:'volume', value:v}); },
+    setVolume(v){
+      currentVolume=v;
+      this._send({cmd:'volume', value:v});
+      setTimeout(()=>this._send({cmd:'volume', value:v}), 300);
+    },
     seekTo(s){ this._send({cmd:'seek', value:s}); },
     loadVideoById(o){ this._send({cmd:'load', videoId:o.videoId, start:o.startSeconds||0, end:o.endSeconds||0}); },
     getCurrentTime(){ return _lastCurrentTime; },
@@ -1723,7 +1771,8 @@ window.addEventListener('message', function(e){
   window.addEventListener('message', function ytMsg(e){
     if(!e.data?.type) return;
     if(e.data.type==='ytready'){
-      ytPlayer.setVolume(currentVolume);
+      // Apply current volume as soon as player is ready
+      ytPlayer._send({cmd:'volume', value:currentVolume});
     }
     if(e.data.type==='ytstate'){
       const YT_ENDED=0, YT_PLAYING=1, YT_PAUSED=2;
