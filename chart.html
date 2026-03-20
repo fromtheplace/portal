@@ -451,8 +451,11 @@ body {
 
 /* NP overlay */
 .tile-np { position: absolute; bottom: 0; left: 0; right: 0; z-index: 4; padding: 4px 8px 6px; pointer-events: none; }
-.tile-np-plays { font-family: var(--font-cond); font-size: 0.5rem; letter-spacing: 0.2em; color: var(--red); text-transform: uppercase; margin-bottom: 1px; }
-.tile-np-title { font-family: var(--font-disp); font-size: 0.95rem; color: rgba(244,242,238,0.95); letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
+.tile-np-plays { display: none; } /* hidden on regular tiles */
+.tile-np-title { display: none; } /* hidden on regular tiles — too cluttered */
+/* show np overlays on featured sidebar tiles */
+.feat-tile .tile-np-plays { display: block; font-family: var(--font-cond); font-size: 0.5rem; letter-spacing: 0.2em; color: var(--red); text-transform: uppercase; margin-bottom: 1px; }
+.feat-tile .tile-np-title { display: block; font-family: var(--font-disp); font-size: 0.95rem; color: rgba(244,242,238,0.95); letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
 
 /* tile meta */
 .tile-meta { padding: 7px 9px 9px; }
@@ -1246,12 +1249,11 @@ function featTileHTML(track, isPlaying) {
 async function buildFeaturedColumn() {
   const sb = document.getElementById('sidebar');
 
-  // Show skeletons immediately
   sb.innerHTML = `
-    <div class="feat-head">Last Week #1</div>
+    <div class="feat-head">#1</div>
+    <div class="feat-skeleton" id="feat-number1">Loading…</div>
+    <div class="feat-head">Last Week's</div>
     <div class="feat-skeleton" id="feat-week">Loading…</div>
-    <div class="feat-head">Last Fortnight #1</div>
-    <div class="feat-skeleton" id="feat-fortnight">Loading…</div>
     <div class="feat-head">Latest Entry</div>
     <div class="feat-skeleton" id="feat-latest">Loading…</div>
   `;
@@ -1266,7 +1268,15 @@ async function buildFeaturedColumn() {
     const rows = await tbFetch('chart_scores');
 
     if (rows && rows.length) {
-      // Last week #1 — top by plays_7d
+      // #1 — all-time top by ftp_score
+      const allTimeRows = [...rows].sort((a,b) => parseFloat(b.ftp_score||0) - parseFloat(a.ftp_score||0));
+      const allTimeTop  = allTimeRows[0];
+      const allTimeIdx  = allTimeTop ? TRACKS.findIndex(t => t.id === allTimeTop.video_id) : -1;
+      const allTimeTrack = allTimeIdx >= 0 ? {...TRACKS[allTimeIdx], _idx: allTimeIdx} : null;
+      const n1El = document.getElementById('feat-number1');
+      if (n1El) n1El.outerHTML = featTileHTML(allTimeTrack, allTimeIdx === currentIdx);
+
+      // Last Week's — top by plays_7d
       const weekRows = [...rows].sort((a,b) => parseInt(b.plays_7d||0) - parseInt(a.plays_7d||0));
       const weekTop  = weekRows[0];
       const weekIdx  = weekTop ? TRACKS.findIndex(t => t.id === weekTop.video_id) : -1;
@@ -1274,24 +1284,15 @@ async function buildFeaturedColumn() {
       const weekEl = document.getElementById('feat-week');
       if (weekEl) weekEl.outerHTML = featTileHTML(weekTrack, weekIdx === currentIdx);
 
-      // Last fortnight #1 — top by plays_14d
-      const fortnightRows = [...rows].sort((a,b) => parseInt(b.plays_14d||0) - parseInt(a.plays_14d||0));
-      const fortnightTop  = fortnightRows[0];
-      const fortnightIdx  = fortnightTop ? TRACKS.findIndex(t => t.id === fortnightTop.video_id) : -1;
-      const fortnightTrack = fortnightIdx >= 0 ? {...TRACKS[fortnightIdx], _idx: fortnightIdx} : null;
-      const fortnightEl = document.getElementById('feat-fortnight');
-      if (fortnightEl) fortnightEl.outerHTML = featTileHTML(fortnightTrack, fortnightIdx === currentIdx);
     } else {
-      // No data — show fallback top tracks from session plays
-      ['feat-week','feat-fortnight'].forEach(id => {
+      ['feat-number1','feat-week'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.innerHTML = '<div style="padding:10px 8px;font-size:0.6rem;color:var(--text-lo);letter-spacing:0.14em;text-transform:uppercase">No data yet</div>';
-        if (el) el.className = '';
+        if (el) { el.innerHTML = '<div style="padding:10px 8px;font-size:0.6rem;color:var(--text-lo);letter-spacing:0.14em;text-transform:uppercase">No data yet</div>'; el.className = ''; }
       });
     }
   } catch(e) {
     console.warn('[featured]', e.message);
-    ['feat-week','feat-fortnight'].forEach(id => {
+    ['feat-number1','feat-week'].forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.textContent = 'Unavailable'; el.className = 'feat-skeleton'; }
     });
