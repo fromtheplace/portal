@@ -10,7 +10,7 @@ const FTP_ANALYTICS = (() => {
 
   const HOST      = 'https://api.europe-west2.gcp.tinybird.co';
   const ENDPOINT  = `${HOST}/v0/events?name=ftp_plays`;
-  const TOKEN     = 'YOUR_WRITE_TOKEN';
+  const TOKEN     = 'p.eyJ1IjogIjkxM2Y0MzdlLTc5OTItNGJjYS05MTY1LWQzYzBiMmE0ZGRkNiIsICJpZCI6ICI1MGNkYTg5My00MzFiLTQzMDQtYWQ2Zi1lNjc2MzgxZDY0ZTkiLCAiaG9zdCI6ICJnY3AtZXVyb3BlLXdlc3QyIn0.MLqG3Z-dTLtWWZqCvDIFD80tVyqtoxJUh2Ns6ieQkZE';
 
   // Stable per-tab session ID
   const SESSION_ID = (
