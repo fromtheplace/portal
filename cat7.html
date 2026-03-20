@@ -99,7 +99,6 @@ body {
 [data-theme="light"] .mast-link { color: #444; }
 [data-theme="light"] .mast-link:hover { color: #000; }
 [data-theme="light"] #logo-cell { border-right-color: #eee; }
-[data-theme="light"] #clock-cell { border-right-color: #eee; }
 [data-theme="light"] .mast-right { border-left-color: #eee; }
 /* hero strip light */
 [data-theme="light"] #hero-strip { background: #CC0000; border-bottom-color: #aa0000; }
@@ -191,10 +190,10 @@ body {
 }
 #logo-cell svg { height: 50px; width: auto; }
 
-/* LCD clock */
+/* LCD clock — now inside mast-right */
 #clock-cell {
-  display: flex; align-items: center; padding: 0 16px;
-  border-right: 1px solid #333; flex-shrink: 0;
+  display: flex; align-items: center; padding: 0 8px;
+  flex-shrink: 0;
 }
 #clock {
   font-family: var(--font-lcd);
@@ -784,8 +783,6 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   #centre { flex: 1; min-height: 0; overflow: hidden; }
   .mast-link { display: none; }
   .gui-sep { display: none; }
-  .mast-search { max-width: none; }
-  #clock-cell { display: none; }
   #tile-grid { grid-template-columns: repeat(2, 1fr); }
   .list-header, .list-row { grid-template-columns: 26px 1fr 52px; }
   .list-header > *:nth-child(4), .list-header > *:nth-child(5),
@@ -820,7 +817,7 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
 <header id="masthead">
   <!-- VIDEO WON logo: Arial Black blocks top, Arial thin italic bottom, theme-inverts -->
   <div id="logo-cell">
-    <svg id="vw-logo" viewBox="0 0 175 68" xmlns="http://www.w3.org/2000/svg" aria-label="VIDEO WON" style="height:50px;width:auto;display:block">
+    <svg id="vw-logo" viewBox="0 0 175 75" xmlns="http://www.w3.org/2000/svg" aria-label="VIDEO WON" style="height:50px;width:auto;display:block">
       <defs>
         <style>
           /* dark mode: white boxes, black letters */
@@ -834,45 +831,43 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
 
       <!-- V -->
       <rect class="vw-box" x="0"   y="0" width="36" height="37" rx="1"/>
-      <text class="vw-letter" x="18"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">V</text>
+      <text class="vw-letter" x="15"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">V</text>
       <!-- I -->
       <rect class="vw-box" x="38"  y="0" width="22" height="37" rx="1"/>
-      <text class="vw-letter" x="49"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">I</text>
+      <text class="vw-letter" x="46"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">I</text>
       <!-- D -->
       <rect class="vw-box" x="62"  y="0" width="38" height="37" rx="1"/>
-      <text class="vw-letter" x="81"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">D</text>
+      <text class="vw-letter" x="79"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">D</text>
       <!-- E -->
       <rect class="vw-box" x="102" y="0" width="33" height="37" rx="1"/>
-      <text class="vw-letter" x="118" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">E</text>
+      <text class="vw-letter" x="115" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">E</text>
       <!-- O — right edge = 137+38 = 175 -->
       <rect class="vw-box" x="137" y="0" width="38" height="37" rx="1"/>
-      <text class="vw-letter" x="156" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">O</text>
+      <text class="vw-letter" x="153" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">O</text>
 
       <!-- ШОN right-aligned to x=175 — Arial weight 100 italic, red -->
-      <text x="175" y="66"
+      <text x="175" y="74"
         font-family="Arial,Helvetica,sans-serif"
         font-weight="100"
         font-style="italic"
-        font-size="28"
+        font-size="45"
         fill="#CC0000"
         text-anchor="end"
-        letter-spacing="1">ШОN</text>
+        letter-spacing="1.5">ШОN</text>
     </svg>
   </div>
 
-  <!-- LCD clock -->
-  <div id="clock-cell">
-    <span id="clock" data-ghost="88:88:88">00:00:00</span>
-  </div>
-
   <div class="mast-center">
-    <div class="on-air-bug"><div class="on-air-dot"></div><div class="on-air-text">Live</div></div>
     <div class="mast-search">
       <input type="text" id="search" placeholder="Search artists, tracks…" autocomplete="off" spellcheck="false">
     </div>
   </div>
 
   <div class="mast-right">
+    <div id="clock-cell">
+      <span id="clock" data-ghost="88:88:88">00:00:00</span>
+    </div>
+    <div class="gui-sep"></div>
     <button id="btn-text-size" title="Cycle text size">L</button>
     <button id="theme-corner" title="Toggle theme">☀</button>
     <div class="gui-sep"></div>
@@ -1617,34 +1612,130 @@ function playTrack(idx){
 }
 
 function ensureYT(cb){
-  if(ytReady){cb();return;}
-  if(!ytApiLoading){ytApiLoading=true;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s);}
-  const w=setInterval(()=>{if(ytReady){clearInterval(w);cb();}},100);
+  // srcdoc approach: YT API loads inside the iframe, not on parent page
+  // so we can call buildYTPlayer immediately — no waiting needed
+  cb();
 }
-window.onYouTubeIframeAPIReady=()=>{ytReady=true;};
+window.onYouTubeIframeAPIReady=()=>{}; // no-op, kept for safety
 
 function buildYTPlayer(t){
-  const inner=document.getElementById('yt-inner');
-  inner.innerHTML='';
-  const div=document.createElement('div');div.id='yt-p';inner.appendChild(div);
-  ytPlayer=new YT.Player('yt-p',{
-    width:'320', height:'260', videoId:t.id,
+  const inner = document.getElementById('yt-inner');
+  inner.innerHTML = '';
+
+  // srcdoc approach — loads YT inside a same-origin page so we can
+  // inject CSS targeting .ytp- elements via MutationObserver
+  const srcdoc = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+#player{width:100%;height:100%}
+/* suppress all YT chrome via attribute selector — catches any class starting ytp- */
+[class^="ytp-endscreen"],[class*=" ytp-endscreen"],
+[class^="ytp-ce-"],[class*=" ytp-ce-"],
+.ytp-chrome-top,.ytp-chrome-bottom,
+.ytp-gradient-top,.ytp-gradient-bottom,
+.ytp-pause-overlay,.ytp-watermark,
+.ytp-spinner,.ytp-bezel-remote,
+.ytp-cards-button,.ytp-cards-teaser,
+.ytp-share-button-visible,
+.ytp-title,.ytp-title-channel,
+.ytp-endscreen-content{
+  display:none!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+</style>
+</head>
+<body>
+<div id="player"></div>
+<script src="https://www.youtube.com/iframe_api"><\/script>
+<script>
+var player;
+var pending = null;
+
+window.onYouTubeIframeAPIReady = function(){
+  player = new YT.Player('player',{
+    width:'100%', height:'100%',
+    videoId:'${t.id}',
     playerVars:{
-      start:t.start, end:t.end||undefined,
+      start:${t.start},
+      ${t.end ? `end:${t.end},` : ''}
       autoplay:1, controls:0, rel:0, modestbranding:1,
       disablekb:1, iv_load_policy:3, fs:0, playsinline:1,
-      cc_load_policy:0,
+      cc_load_policy:0, origin: window.location.origin
     },
     events:{
-      onReady(e){e.target.setVolume(currentVolume);},
-      onStateChange(e){
-        if(e.data===YT.PlayerState.ENDED)  onTrackEnd();
-        if(e.data===YT.PlayerState.PLAYING){isPlaying=true;  document.getElementById('btn-play').textContent='⏸';}
-        if(e.data===YT.PlayerState.PAUSED) {isPlaying=false; document.getElementById('btn-play').textContent='▶';}
+      onReady: function(e){
+        e.target.setVolume(${currentVolume});
+        // MutationObserver to catch dynamically injected ytp- elements
+        var obs = new MutationObserver(function(){
+          var all = document.querySelectorAll('[class*="ytp-endscreen"],[class*="ytp-ce-"],[class*="ytp-pause-overlay"]');
+          all.forEach(function(el){ el.style.display='none'; el.style.opacity='0'; });
+        });
+        obs.observe(document.body, {childList:true, subtree:true, attributes:true});
+        window.parent.postMessage({type:'ytready'},'*');
+      },
+      onStateChange: function(e){
+        window.parent.postMessage({type:'ytstate', state:e.data},'*');
       }
     }
   });
+};
+
+// Listen for commands from parent
+window.addEventListener('message', function(e){
+  if(!player) { pending = e.data; return; }
+  var d = e.data;
+  if(d.cmd==='play')    player.playVideo();
+  if(d.cmd==='pause')   player.pauseVideo();
+  if(d.cmd==='volume')  player.setVolume(d.value);
+  if(d.cmd==='seek')    player.seekTo(d.value, true);
+  if(d.cmd==='load')    player.loadVideoById({videoId:d.videoId, startSeconds:d.start, endSeconds:d.end});
+  if(d.cmd==='getTime') window.parent.postMessage({type:'currentTime', value:player.getCurrentTime()},'*');
+});
+<\/script>
+</body>
+</html>`;
+
+  const iframe = document.createElement('iframe');
+  iframe.setAttribute('srcdoc', srcdoc);
+  iframe.style.cssText = 'width:100%;height:100%;border:none;display:block;';
+  iframe.allow = 'autoplay; encrypted-media';
+  iframe.setAttribute('allowfullscreen', '');
+  inner.appendChild(iframe);
+
+  // Store reference — communicate via postMessage instead of YT API directly
+  ytPlayer = {
+    _iframe: iframe,
+    _send(cmd){ iframe.contentWindow?.postMessage(cmd,'*'); },
+    playVideo(){ this._send({cmd:'play'}); },
+    pauseVideo(){ this._send({cmd:'pause'}); },
+    setVolume(v){ this._send({cmd:'volume', value:v}); },
+    seekTo(s){ this._send({cmd:'seek', value:s}); },
+    loadVideoById(o){ this._send({cmd:'load', videoId:o.videoId, start:o.startSeconds||0, end:o.endSeconds||0}); },
+    getCurrentTime(){ return _lastCurrentTime; },
+  };
+
+  // Listen for messages back from the srcdoc iframe
+  window.addEventListener('message', function ytMsg(e){
+    if(!e.data?.type) return;
+    if(e.data.type==='ytready'){
+      ytPlayer.setVolume(currentVolume);
+    }
+    if(e.data.type==='ytstate'){
+      const YT_ENDED=0, YT_PLAYING=1, YT_PAUSED=2;
+      if(e.data.state===YT_ENDED)   onTrackEnd();
+      if(e.data.state===YT_PLAYING){isPlaying=true;  document.getElementById('btn-play').textContent='⏸';}
+      if(e.data.state===YT_PAUSED) {isPlaying=false; document.getElementById('btn-play').textContent='▶';}
+    }
+    if(e.data.type==='currentTime') _lastCurrentTime = e.data.value;
+  });
 }
+
+var _lastCurrentTime = 0;
 
 function onTrackEnd(){
   const fi=filteredIdxs.findIndex(({i})=>i===currentIdx);
@@ -1654,13 +1745,14 @@ function onTrackEnd(){
 function startProgress(t){
   clearInterval(progInterval);
   const dur=Math.max(0,t.end-t.start); if(!dur) return;
+  // Poll time from srcdoc iframe every 500ms via postMessage
   progInterval=setInterval(()=>{
     if(!ytPlayer||!isPlaying) return;
-    try{
-      const cur=Math.max(0,ytPlayer.getCurrentTime()-t.start);
-      document.getElementById('prog-fill').style.width=Math.min(100,(cur/dur)*100)+'%';
-      document.getElementById('prog-cur').textContent=fmtDur(Math.floor(cur));
-    }catch(e){}
+    // Request current time from iframe
+    ytPlayer._send({cmd:'getTime'});
+    const cur=Math.max(0,_lastCurrentTime-t.start);
+    document.getElementById('prog-fill').style.width=Math.min(100,(cur/dur)*100)+'%';
+    document.getElementById('prog-cur').textContent=fmtDur(Math.floor(cur));
   },500);
 }
 
@@ -1672,7 +1764,7 @@ document.getElementById('prog-track').addEventListener('click',e=>{
   if(!ytPlayer||currentIdx<0)return;
   const t=TRACKS[currentIdx];
   const pct=(e.clientX-e.currentTarget.getBoundingClientRect().left)/e.currentTarget.offsetWidth;
-  ytPlayer.seekTo(t.start+pct*(t.end-t.start),true);
+  ytPlayer.seekTo(t.start+pct*(t.end-t.start));
 });
 
 // Video panel
