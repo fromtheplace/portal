@@ -1007,7 +1007,8 @@ function recordPlay(idx){
   if(activeView==='chart') renderChart();
   // push this video_id to front of recent order locally so tiles update immediately
   tbRecentOrder = [t.id, ...tbRecentOrder.filter(id => id !== t.id)];
-  document.getElementById('hs-now').textContent = `▶ ${t.artist}`;
+  const hsNow = document.getElementById('hs-now');
+  if (hsNow) hsNow.textContent = `▶ ${t.artist}`;
 }
 loadSession();
 
