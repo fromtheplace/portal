@@ -84,9 +84,14 @@ body {
 .ch-card[data-ch-num="3"] .ch-thumb-fb-num {
   background-image: url(images/logo-S.png); font-size: 0;
 }
+.ch-card[data-ch-num="8"] .ch-thumb-fb {
+  background: #F5F4F0;
+}
 .ch-card[data-ch-num="8"] .ch-thumb-fb-num {
-  background-image: url(images/vw.png); font-size: 0;
-  filter: invert(1) brightness(0.8);
+  background-image: url(images/vw.png);
+  font-size: 0;
+  filter: none;
+  width: 140px; height: 60px;
 }
 .ch-thumb-fb-num {
   color: var(--text-lo); letter-spacing: -3px; line-height: 1;
@@ -683,7 +688,7 @@ function buildCard(ch, grid) {
   grid.appendChild(card);
   cardMap[ch.num] = card;
 
-  // Resolve now-playing
+  // Resolve now-playing — also sets static thumb eagerly
   resolveNowPlaying(ch).then(result => {
     const npEl = card.querySelector('[data-np]');
     if (!npEl) return;
@@ -703,9 +708,19 @@ function buildCard(ch, grid) {
 
     if (result?.videoId) {
       liveVideoId = result.videoId;
-      if (ch.featured && staticImg) {
+      // Fix: eagerly set static thumb from now-playing for channels with no thumbId
+      if (staticImg) {
         const liveSrc = ytThumb(result.videoId, 'hqdefault');
         if (staticImg.src !== liveSrc) staticImg.src = liveSrc;
+      } else if (!staticSrc) {
+        // No static img element was created — inject one now
+        const img = document.createElement('img');
+        img.className = 'ch-thumb-static';
+        img.alt = ch.name;
+        img.src = ytThumb(result.videoId, 'hqdefault');
+        img.addEventListener('error', () => { img.style.display = 'none'; fb.style.display = ''; });
+        card.querySelector('.ch-thumb').prepend(img);
+        fb.style.display = 'none';
       }
     }
   });
