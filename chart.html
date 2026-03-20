@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -190,17 +190,17 @@ body {
 }
 #logo-cell svg { height: 50px; width: auto; }
 
-/* LCD clock — now inside mast-right */
+/* LCD clock — now inside mast-right — always small regardless of text scale */
 #clock-cell {
   display: flex; align-items: center; padding: 0 8px;
   flex-shrink: 0;
 }
 #clock {
   font-family: var(--font-lcd);
-  font-size: 2rem;
+  font-size: 0.95rem; /* small — fixed, not scaled with --ts */
   color: var(--red);
-  letter-spacing: 0.08em;
-  text-shadow: 0 0 10px rgba(204,0,0,0.7), 0 0 20px rgba(204,0,0,0.35);
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 8px rgba(204,0,0,0.6), 0 0 16px rgba(204,0,0,0.3);
   position: relative;
 }
 #clock::before {
@@ -211,19 +211,30 @@ body {
   letter-spacing: 0.04em;
 }
 
-.mast-center {
-  flex: 1; display: flex; align-items: center; gap: 10px; padding: 0 12px; min-width: 0;
-}
+/* ── SEARCH with clear button ────────────────────────────────────── */
 .mast-search { flex: 1; max-width: 300px; position: relative; }
 .mast-search input {
   width: 100%; background: #222; border: 1px solid #333; border-bottom: 2px solid var(--red);
-  color: var(--white); padding: 6px 10px 6px 26px;
+  color: var(--white); padding: 6px 28px 6px 26px;
   font-family: var(--font-mono); font-size: 0.8rem; outline: none;
   transition: border-color 0.15s, background 0.15s;
 }
 .mast-search input:focus { background: #2a2a2a; border-color: var(--red); }
 .mast-search input::placeholder { color: #555; }
-.mast-search::before { content: '⌕'; position: absolute; left: 7px; top: 50%; transform: translateY(-50%); color: #555; font-size: 14px; pointer-events: none; }
+.mast-search::before { content: '⌕'; position: absolute; left: 7px; top: 50%; transform: translateY(-50%); color: #555; font-size: 14px; pointer-events: none; z-index: 1; }
+/* X clear button */
+#search-clear {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: #555; font-size: 13px; cursor: pointer;
+  padding: 2px 4px; line-height: 1; display: none; /* hidden until there's input */
+  z-index: 1;
+}
+#search-clear:hover { color: var(--red); }
+#search-clear.visible { display: block; }
+
+.mast-center {
+  flex: 1; display: flex; align-items: center; gap: 10px; padding: 0 12px; min-width: 0;
+}
 
 /* On-air bug */
 .on-air-bug {
@@ -557,6 +568,7 @@ body {
 .chart-move { font-size: 1rem; text-align: center; font-family: var(--font-cond); font-weight: 700; line-height: 1; }
 .chart-move.up   { color: #44DD44; }   /* green up arrow */
 .chart-move.down { color: #4488FF; }   /* blue down arrow — overtaken */
+.chart-move.new  { color: var(--yellow); font-size: 0.75rem; } /* yellow star — new entry */
 .chart-move.same { color: var(--text-lo); }
 
 /* genre breakdown */
@@ -777,16 +789,30 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
     border-right: none; border-bottom: 1px solid var(--border);
     overflow-y: visible; flex-direction: row;
     display: flex; flex-wrap: nowrap; overflow-x: auto;
-    /* horizontal scroll on mobile — three tiles side by side */
     scrollbar-width: none;
   }
   #sidebar::-webkit-scrollbar { display: none; }
-  /* on mobile each featured slot is 60vw wide horizontal card */
   .feat-head { writing-mode: vertical-rl; text-orientation: mixed; padding: 8px 4px; flex-shrink: 0; min-width: 24px; }
   .feat-tile { min-width: 52vw; flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border); }
   #centre { flex: 1; min-height: 0; overflow: hidden; }
   .mast-link { display: none; }
   .gui-sep { display: none; }
+
+  /* search — full width, not squashed */
+  .mast-center { padding: 0 8px; }
+  .mast-search { max-width: none; flex: 1; }
+
+  /* view-tabs — horizontal scroll so chart sub-nav doesn't get lost */
+  .view-tabs {
+    overflow-x: auto; overflow-y: visible;
+    flex-wrap: nowrap; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .view-tabs::-webkit-scrollbar { display: none; }
+  .view-tab { padding: 8px 14px; font-size: 1.5rem; flex-shrink: 0; }
+  #chart-subnav { flex-shrink: 0; }
+  .chart-period-btn { font-size: 1.3rem; padding: 8px 12px; }
+
   #tile-grid { grid-template-columns: repeat(2, 1fr); }
   .list-header, .list-row { grid-template-columns: 26px 1fr 52px; }
   .list-header > *:nth-child(4), .list-header > *:nth-child(5),
@@ -808,7 +834,6 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   #vid-info { display: none; }
   #vid-panel #yt-inner { top: -42px; bottom: -42px; left: -2px; right: -2px; }
   #vid-resize-handle { display: none; }
-  /* feat-skeleton full width on mobile */
   .feat-skeleton { min-width: 52vw; }
 }
 </style>
@@ -854,16 +879,17 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
         font-family="Arial,Helvetica,sans-serif"
         font-weight="100"
         font-style="italic"
-        font-size="45"
+        font-size="43"
         fill="#CC0000"
         text-anchor="end"
-        letter-spacing="1.5">ШОN</text>
+        letter-spacing="4">ШОN</text>
     </svg>
   </div>
 
   <div class="mast-center">
     <div class="mast-search">
       <input type="text" id="search" placeholder="Search artists, tracks…" autocomplete="off" spellcheck="false">
+      <button id="search-clear" title="Clear">✕</button>
     </div>
   </div>
 
@@ -888,7 +914,7 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
       <div id="genre-chips"></div>
 
       <div class="view-tabs">
-        <button class="view-tab active" data-view="tiles">Tiles</button>
+        <button class="view-tab active" data-view="tiles">Clips</button>
         <button class="view-tab" data-view="list">List</button>
         <button class="view-tab" data-view="chart">Chart</button>
         <!-- chart sub-nav — shown only when chart is active -->
@@ -1107,13 +1133,15 @@ document.getElementById('btn-text-size').addEventListener('click', () => applySc
 applyScale(3);
 
 // ── THEME — corner button only ───────────────────────────────────
-let isDark = true;
+let isDark = false; // default light mode
 function setTheme(dark) {
   isDark = dark;
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   document.getElementById('theme-corner').textContent = isDark ? '☀' : '☾';
 }
 document.getElementById('theme-corner').addEventListener('click', () => setTheme(!isDark));
+// init theme-corner icon to match default light
+document.getElementById('theme-corner').textContent = '☾';
 
 // ── DRAG RESIZE VIDEO PANEL ──────────────────────────────────────
 (function() {
@@ -1453,6 +1481,7 @@ async function renderChart(){
         // Load previous rank snapshot from localStorage
         let prevRanks = {};
         try { prevRanks = JSON.parse(localStorage.getItem('vw_prev_ranks') || '{}'); } catch(e){}
+        const isFirstLoad = Object.keys(prevRanks).length === 0;
 
         const sorted = [...rows].sort((a,b)=>parseFloat(b.ftp_score||0)-parseFloat(a.ftp_score||0)).slice(0,15);
 
@@ -1460,9 +1489,13 @@ async function renderChart(){
           const curRank  = n + 1;
           const prevRank = prevRanks[r.video_id];
           let momentum = '—';
-          if (prevRank !== undefined) {
-            if (curRank < prevRank)       momentum = '↑'; // moved up
-            else if (curRank > prevRank)  momentum = '↓'; // overtaken, moved down
+          if (isFirstLoad) {
+            momentum = 'NEW'; // first ever load — everything is new
+          } else if (prevRank === undefined) {
+            momentum = '↑'; // entered the chart — treat as rising
+          } else {
+            if (curRank < prevRank)       momentum = '↑';
+            else if (curRank > prevRank)  momentum = '↓';
           }
           return {
             videoId: r.video_id, title: r.title, artist: r.artist, genre: r.genre,
@@ -1502,8 +1535,8 @@ async function renderChart(){
   // Render list — no points shown, blue down arrow for overtaken
   const rankClass=n=>n===0?'gold':n===1?'silver':n===2?'bronze':'';
   listEl.innerHTML=ranked.map((r,n)=>{
-    const momClass = r.momentum==='↑'?'up' : r.momentum==='↓'?'down' : 'same';
-    const momGlyph = r.momentum==='↑'?'▲' : r.momentum==='↓'?'▼' : '—';
+    const momClass = r.momentum==='↑'?'up' : r.momentum==='↓'?'down' : r.momentum==='NEW'?'new' : 'same';
+    const momGlyph = r.momentum==='↑'?'▲' : r.momentum==='↓'?'▼' : r.momentum==='NEW'?'★' : '—';
     return`<div class="chart-row${r.videoId===TRACKS[currentIdx]?.id?' playing':''}" data-video-id="${r.videoId||''}">
       <div class="chart-rank ${rankClass(n)}">${n+1}</div>
       <img class="chart-thumb-sm" src="${ytThumb(r.videoId)}" loading="lazy" alt="" onerror="this.style.display='none'">
@@ -1756,8 +1789,21 @@ document.getElementById('toggle-video').addEventListener('click',()=>{
   if(videoOn) ensureYT(()=>{});
 });
 
-// Search
-document.getElementById('search').addEventListener('input',e=>{searchTerm=e.target.value.trim();render();});
+// Search + clear button
+const searchInput = document.getElementById('search');
+const searchClear = document.getElementById('search-clear');
+searchInput.addEventListener('input', e => {
+  searchTerm = e.target.value.trim();
+  searchClear.classList.toggle('visible', searchTerm.length > 0);
+  render();
+});
+searchClear.addEventListener('click', () => {
+  searchInput.value = '';
+  searchTerm = '';
+  searchClear.classList.remove('visible');
+  searchInput.focus();
+  render();
+});
 
 // Keyboard
 document.addEventListener('keydown',e=>{
