@@ -6,12 +6,15 @@
 <title>VIDEO WON — CATALOGUE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&display=swap" rel="stylesheet">
-<!-- DS-Digital: real 7-segment LCD clock font -->
 <link href="https://fonts.cdnfonts.com/css/ds-digital" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/dseg7-classic" rel="stylesheet">
 <style>
-/* fallback: if DS-Digital unavailable, use DSEG7 */
-@import url('https://fonts.cdnfonts.com/css/dseg7-classic');
-
+/* ══════════════════════════════════════════════════════════════════
+   TOKENS — VIDEO WON
+   Inspired by: MTV 2009 editorial grid + broadcast CRT
+   Light: newsprint white base, bold black hierarchy, red/yellow pops
+   Dark:  near-black CRT, same accent structure
+══════════════════════════════════════════════════════════════════ */
 :root {
   --red:        #CC0000;
   --red-dim:    #880000;
@@ -43,7 +46,7 @@
   --hero-h:     0px;
   --player-h:   62px;
   --vid-w:      320px;
-  --sidebar-w:  172px;
+  --sidebar-w:  344px;
   --ts: 1.3;
 }
 
@@ -532,7 +535,7 @@ body {
 .chart-period-btn.active { color: var(--text-hi); border-bottom-color: var(--red); }
 .chart-list { display: flex; flex-direction: column; border: 1px solid var(--border); margin-bottom: 14px; }
 .chart-row {
-  display: grid; grid-template-columns: 28px 44px 1fr 62px 32px;
+  display: grid; grid-template-columns: 28px 44px 1fr 32px;
   align-items: center; padding: 0 10px; min-height: 46px;
   border-bottom: 1px solid rgba(46,46,46,0.5); cursor: pointer; transition: background 0.08s;
 }
@@ -552,10 +555,11 @@ body {
 .chart-info { min-width: 0; padding: 0 6px; }
 .chart-info-title { font-family: var(--font-cond); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.05em; color: var(--text-hi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
 .chart-info-sub { font-size: 0.65rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.chart-score { font-family: var(--font-disp); font-size: 1.2rem; color: var(--text-lo); text-align: right; white-space: nowrap; }
-.chart-score.has-data { color: var(--red); }
-.chart-move { font-size: 0.75rem; text-align: center; font-family: var(--font-cond); font-weight: 700; }
-.chart-move.up { color: var(--yellow); } .chart-move.down { color: var(--red); } .chart-move.same { color: var(--text-lo); }
+.chart-score { display: none; } /* points hidden from users */
+.chart-move { font-size: 1rem; text-align: center; font-family: var(--font-cond); font-weight: 700; line-height: 1; }
+.chart-move.up   { color: #44DD44; }   /* green up arrow */
+.chart-move.down { color: #4488FF; }   /* blue down arrow — overtaken */
+.chart-move.same { color: var(--text-lo); }
 
 /* genre breakdown */
 .chart-breakdown { border: 1px solid var(--border); padding: 12px; display: flex; flex-direction: column; gap: 0; }
@@ -622,20 +626,13 @@ body {
   background: #000; min-height: 0;
 }
 
-/* The iframe container is scaled to 130% of the panel width,
-   centered, maintaining 16:9. This pushes YT chrome AND end screen
-   tiles outside the overflow:hidden boundary on all 4 sides.
-   pointer-events:none on overlay means clicks still reach iframe. */
+/* Oversized iframe centered in #yt-wrap — overflow:hidden on parent clips all YT chrome.
+   We use absolute positioning with negative insets instead of padding-bottom trick. */
 #yt-inner {
   position: absolute;
-  width: 130%;
-  /* keep 16:9 at 130% width */
-  height: 0;
-  padding-bottom: calc(130% * 56.25%);
-  /* center horizontally and vertically */
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  overflow: hidden;
+  /* extend 15% beyond each edge so YT chrome bleeds off-screen */
+  top: -15%; bottom: -15%;
+  left: -15%; right: -15%;
 }
 #yt-inner iframe,
 #yt-inner > div {
@@ -771,8 +768,22 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
 ══════════════════════════════════════════════════════════════════ */
 @media (max-width: 600px) {
   :root { --player-h: 56px; }
-  #sidebar { display: none; }
-  .mast-link { display: none; }  /* hide nav links on mobile */
+  /* on mobile the app stacks vertically — sidebar on top, content below */
+  #app { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+  #sidebar {
+    width: 100% !important; flex-shrink: 0;
+    border-right: none; border-bottom: 1px solid var(--border);
+    overflow-y: visible; flex-direction: row;
+    display: flex; flex-wrap: nowrap; overflow-x: auto;
+    /* horizontal scroll on mobile — three tiles side by side */
+    scrollbar-width: none;
+  }
+  #sidebar::-webkit-scrollbar { display: none; }
+  /* on mobile each featured slot is 60vw wide horizontal card */
+  .feat-head { writing-mode: vertical-rl; text-orientation: mixed; padding: 8px 4px; flex-shrink: 0; min-width: 24px; }
+  .feat-tile { min-width: 52vw; flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border); }
+  #centre { flex: 1; min-height: 0; overflow: hidden; }
+  .mast-link { display: none; }
   .gui-sep { display: none; }
   .mast-search { max-width: none; }
   #clock-cell { display: none; }
@@ -785,7 +796,7 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   .progress-wrap { width: 100px; }
   .prog-time { display: none; }
   .vol-wrap { display: none; }
-  /* video above player on mobile — same crop approach */
+  /* video above player on mobile */
   #vid-panel {
     position: fixed; bottom: var(--player-h); left: 0; right: 0;
     width: 100%; height: 56vw; z-index: 90;
@@ -795,8 +806,10 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   #vid-panel.on { display: flex; }
   #app.vid-mobile { bottom: calc(var(--player-h) + 56vw); }
   #vid-info { display: none; }
-  #vid-panel #yt-inner { width: 115%; padding-bottom: calc(115% * 56.25%); }
+  #vid-panel #yt-inner { top: -12%; bottom: -12%; left: -12%; right: -12%; }
   #vid-resize-handle { display: none; }
+  /* feat-skeleton full width on mobile */
+  .feat-skeleton { min-width: 52vw; }
 }
 </style>
 </head>
@@ -807,20 +820,19 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
 ════════════════════════════════════════════════════════════════ -->
 <header id="masthead">
   <!-- VIDEO WON logo — Ш О Н in Impact italic (Cyrillic: Ш=W О=O Н=N/H shape) -->
-
-   <div id="logo-cell">
+  <div id="logo-cell">
     <svg viewBox="0 0 264 66" xmlns="http://www.w3.org/2000/svg" aria-label="VIDEO WON" style="height:48px;width:auto;display:block">
       <!-- Each VIDEO letter in its own black square block — 10% bigger than previous -->
       <rect x="0"   y="2" width="33" height="35" rx="1" fill="#1a1a1a"/>
-      <text x="16"  y="28" font-family="Arial Black, sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">V</text>
+      <text x="16"  y="28" font-family="'Barlow Condensed',Arial Narrow,sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">V</text>
       <rect x="35"  y="2" width="22" height="35" rx="1" fill="#1a1a1a"/>
-      <text x="46"  y="28" font-family="Arial Black, sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">I</text>
+      <text x="46"  y="28" font-family="'Barlow Condensed',Arial Narrow,sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">I</text>
       <rect x="59"  y="2" width="37" height="35" rx="1" fill="#1a1a1a"/>
-      <text x="77"  y="28" font-family="Arial Black, sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">D</text>
+      <text x="77"  y="28" font-family="'Barlow Condensed',Arial Narrow,sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">D</text>
       <rect x="98"  y="2" width="31" height="35" rx="1" fill="#1a1a1a"/>
-      <text x="113" y="28" font-family="Arial Black, sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">E</text>
+      <text x="113" y="28" font-family="'Barlow Condensed',Arial Narrow,sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">E</text>
       <rect x="131" y="2" width="35" height="35" rx="1" fill="#1a1a1a"/>
-      <text x="148" y="28" font-family="Arial Black, sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">O</text>
+      <text x="148" y="28" font-family="'Barlow Condensed',Arial Narrow,sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">O</text>
       <!--
         ШОН — Cyrillic glyphs rendered in Impact which has full Cyrillic support
         Ш = W-shape (three downstrokes + base)
@@ -828,9 +840,10 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
         Н = H-shape (two verticals + crossbar) — this is the correct Cyrillic N
         NOT И (which is backwards N) — Н is correct
       -->
-   <text font-weight="100" font-style="italic" fill="#CC0000" text-anchor="end" letter-spacing="0" font-family="Arial,sans-serif" font-size="30" y="65" x="164">ШОN</text>
-       
-       
+      <text x="264" y="62"
+        font-family="Impact,Arial Black,sans-serif"
+        font-weight="900" font-style="italic" font-size="26"
+        fill="#CC0000" text-anchor="end" letter-spacing="0">ШОН</text>
     </svg>
   </div>
 
@@ -986,7 +999,8 @@ function recordPlay(idx){
   saveSession();
   if(typeof FTP_ANALYTICS!=='undefined') FTP_ANALYTICS.play(t,'catalogue');
   if(activeView==='chart') renderChart();
-  // update hero now-playing
+  // push this video_id to front of recent order locally so tiles update immediately
+  tbRecentOrder = [t.id, ...tbRecentOrder.filter(id => id !== t.id)];
   document.getElementById('hs-now').textContent = `▶ ${t.artist}`;
 }
 loadSession();
@@ -1026,6 +1040,22 @@ async function tbFetch(pipe){
   return (await res.json()).data||[];
 }
 let tbChartCache=null, tbCacheTime=0;
+// Universal recent plays order — fetched from Tinybird on load
+let tbRecentOrder = []; // array of video_ids in play order, most recent first
+
+async function fetchRecentOrder() {
+  try {
+    const rows = await tbFetch('recent_plays');
+    if (rows?.length) {
+      // dedupe by video_id, keep most recent first
+      const seen = new Set();
+      tbRecentOrder = rows
+        .filter(r => { if (seen.has(r.video_id)) return false; seen.add(r.video_id); return true; })
+        .map(r => r.video_id);
+      render(); // re-render tiles in new order
+    }
+  } catch(e) { console.warn('[recent order]', e.message); }
+}
 
 // ══════════════════════════════════════════════════════════════════
 //  STATE
@@ -1150,9 +1180,19 @@ function getFiltered(){
   let a=TRACKS.map((t,i)=>({t,i}));
   if(activeGenre!=='ALL') a=a.filter(({t})=>t.genre===activeGenre);
   if(searchTerm){const q=searchTerm.toLowerCase();a=a.filter(({t})=>t.title.toLowerCase().includes(q)||t.artist.toLowerCase().includes(q));}
-  if(sortBy==='az')   a.sort((a,b)=>a.t.artist.localeCompare(b.t.artist));
-  if(sortBy==='dur')  a.sort((a,b)=>(b.t.end-b.t.start)-(a.t.end-a.t.start));
-  if(sortBy==='plays')a.sort((a,b)=>(playCounts[b.i]||0)-(playCounts[a.i]||0));
+  if(sortBy==='az')    a.sort((a,b)=>a.t.artist.localeCompare(b.t.artist));
+  else if(sortBy==='dur')   a.sort((a,b)=>(b.t.end-b.t.start)-(a.t.end-a.t.start));
+  else if(sortBy==='plays') a.sort((a,b)=>(playCounts[b.i]||0)-(playCounts[a.i]||0));
+  else if(tbRecentOrder.length) {
+    // default: sort by universal recent plays from Tinybird
+    // tracks not in recent list go to end in their original order
+    const orderMap = new Map(tbRecentOrder.map((id,pos)=>[id,pos]));
+    a.sort((x,y)=>{
+      const px = orderMap.has(x.t.id) ? orderMap.get(x.t.id) : 99999;
+      const py = orderMap.has(y.t.id) ? orderMap.get(y.t.id) : 99999;
+      return px - py;
+    });
+  }
   return a;
 }
 
@@ -1385,11 +1425,32 @@ async function renderChart(){
       badge.style.background='var(--red)';
 
       if(chartPeriod==='plays'){
-        ranked=rows.sort((a,b)=>parseFloat(b.ftp_score||0)-parseFloat(a.ftp_score||0)).slice(0,15).map(r=>({
-          videoId:r.video_id,title:r.title,artist:r.artist,genre:r.genre,
-          cnt:parseInt(r.total_plays)||0,score:Math.round(parseFloat(r.ftp_score)||0),
-          momentum:(()=>{const p7=parseInt(r.plays_7d)||0,p30=parseInt(r.plays_30d)||1;return p7/p30>0.7?'↑':p7/p30<0.1?'↓':'—';})()
-        }));
+        // Load previous rank snapshot from localStorage
+        let prevRanks = {};
+        try { prevRanks = JSON.parse(localStorage.getItem('vw_prev_ranks') || '{}'); } catch(e){}
+
+        const sorted = [...rows].sort((a,b)=>parseFloat(b.ftp_score||0)-parseFloat(a.ftp_score||0)).slice(0,15);
+
+        ranked = sorted.map((r,n)=>{
+          const curRank  = n + 1;
+          const prevRank = prevRanks[r.video_id];
+          let momentum = '—';
+          if (prevRank !== undefined) {
+            if (curRank < prevRank)       momentum = '↑'; // moved up
+            else if (curRank > prevRank)  momentum = '↓'; // overtaken, moved down
+          }
+          return {
+            videoId: r.video_id, title: r.title, artist: r.artist, genre: r.genre,
+            cnt: parseInt(r.total_plays)||0, score: Math.round(parseFloat(r.ftp_score)||0),
+            momentum
+          };
+        });
+
+        // Save current ranks for next visit
+        const newSnapshot = {};
+        sorted.forEach((r,n) => { newSnapshot[r.video_id] = n+1; });
+        try { localStorage.setItem('vw_prev_ranks', JSON.stringify(newSnapshot)); } catch(e){}
+
       } else if(chartPeriod==='recent'){
         const recent=await tbFetch('recent_plays');
         const seen=new Set();
@@ -1413,11 +1474,11 @@ async function renderChart(){
     return;
   }
 
-  // Render list
+  // Render list — no points shown, blue down arrow for overtaken
   const rankClass=n=>n===0?'gold':n===1?'silver':n===2?'bronze':'';
   listEl.innerHTML=ranked.map((r,n)=>{
-    const hasData=r.cnt>0||r.score>0;
-    const momClass=r.momentum==='↑'?'up':r.momentum==='↓'?'down':'same';
+    const momClass = r.momentum==='↑'?'up' : r.momentum==='↓'?'down' : 'same';
+    const momGlyph = r.momentum==='↑'?'▲' : r.momentum==='↓'?'▼' : '—';
     return`<div class="chart-row${r.videoId===TRACKS[currentIdx]?.id?' playing':''}" data-video-id="${r.videoId||''}">
       <div class="chart-rank ${rankClass(n)}">${n+1}</div>
       <img class="chart-thumb-sm" src="${ytThumb(r.videoId)}" loading="lazy" alt="" onerror="this.style.display='none'">
@@ -1425,22 +1486,25 @@ async function renderChart(){
         <div class="chart-info-title">${esc(r.artist)}</div>
         <div class="chart-info-sub">${esc(r.title)}</div>
       </div>
-      <div class="chart-score${hasData?' has-data':''}">${hasData?(usedTB?r.score+'pts':r.cnt+'×'):'—'}</div>
-      <div class="chart-move ${momClass}">${r.momentum}</div>
+      <div class="chart-move ${momClass}">${momGlyph}</div>
     </div>`;
   }).join('');
   listEl.querySelectorAll('.chart-row').forEach(row=>{
     row.addEventListener('click',()=>{const idx=TRACKS.findIndex(t=>t.id===row.dataset.videoId);if(idx>=0)playTrack(idx);});
   });
 
-  // Timeline — try Tinybird recent_plays, fall back to session
   let timeRows=[];
   try{
     if(usedTB){
       const recent=await tbFetch('recent_plays');
-      timeRows=recent.slice(0,20).map(r=>({id:r.video_id,title:r.title,artist:r.artist,genre:r.genre,playedAt:new Date(r.ts.replace(' ','T')+'Z').getTime()}));
+      timeRows=recent.slice(0,20).map(r=>{
+        // Tinybird ts can be "2026-03-20 12:34:56" or ISO format
+        let ts = r.ts || '';
+        const ms = Date.parse(ts.includes('T') ? ts : ts.replace(' ','T')+'Z');
+        return {id:r.video_id,title:r.title,artist:r.artist,genre:r.genre,playedAt:isNaN(ms)?Date.now():ms};
+      });
     }
-  }catch(e){}
+  }catch(e){ console.warn('[timeline]',e.message); }
   if(!timeRows.length) timeRows=playHistory.slice(0,20).map(h=>({id:h.id,title:h.title,artist:h.artist,genre:h.genre,playedAt:h.playedAt}));
   histCount.textContent=timeRows.length?`${timeRows.length} plays`:'—';
   timelineEl.innerHTML=timeRows.length
@@ -1643,6 +1707,7 @@ setInterval(tick,1000); tick();
 })();
 
 buildFeaturedColumn();
+fetchRecentOrder(); // load universal recent plays order for default tile sort
 document.getElementById('tile-view').style.display ='block';
 document.getElementById('list-view').style.display ='none';
 document.getElementById('chart-view').style.display='none';
