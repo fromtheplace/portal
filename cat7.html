@@ -9,12 +9,7 @@
 <link href="https://fonts.cdnfonts.com/css/ds-digital" rel="stylesheet">
 <link href="https://fonts.cdnfonts.com/css/dseg7-classic" rel="stylesheet">
 <style>
-/* ══════════════════════════════════════════════════════════════════
-   TOKENS — VIDEO WON
-   Inspired by: MTV 2009 editorial grid + broadcast CRT
-   Light: newsprint white base, bold black hierarchy, red/yellow pops
-   Dark:  near-black CRT, same accent structure
-══════════════════════════════════════════════════════════════════ */
+
 :root {
   --red:        #CC0000;
   --red-dim:    #880000;
@@ -42,11 +37,11 @@
   --font-cond:  'Barlow Condensed', sans-serif;
   --font-lcd:   'DS-Digital', 'DSEG7 Classic', monospace;
 
-  --masthead-h: 75px;
+  --masthead-h: 78px;
   --hero-h:     0px;
   --player-h:   62px;
   --vid-w:      320px;
-  --sidebar-w:  344px;
+  --sidebar-w:  280px;
   --ts: 1.3;
 }
 
@@ -194,7 +189,7 @@ body {
   border-right: 1px solid #333;
   flex-shrink: 0; cursor: default;
 }
-#logo-cell svg { height: 34px; width: auto; }
+#logo-cell svg { height: 50px; width: auto; }
 
 /* LCD clock */
 #clock-cell {
@@ -823,31 +818,45 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
      MASTHEAD
 ════════════════════════════════════════════════════════════════ -->
 <header id="masthead">
-  <!-- VIDEO WON logo — Ш О Н in Impact italic (Cyrillic: Ш=W О=O Н=N/H shape) -->
+  <!-- VIDEO WON logo: Arial Black blocks top, Arial thin italic bottom, theme-inverts -->
   <div id="logo-cell">
-    <svg viewBox="0 0 264 66" xmlns="http://www.w3.org/2000/svg" aria-label="VIDEO WON" style="height:48px;width:auto;display:block">
-      <!-- Each VIDEO letter in its own black square block — 10% bigger than previous -->
-      <rect x="0"   y="2" width="33" height="35" rx="1" fill="#1a1a1a"/>
-      <text x="16"  y="28" font-family="'Barlow Condensed',Arial Narrow,sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">V</text>
-      <rect x="35"  y="2" width="22" height="35" rx="1" fill="#1a1a1a"/>
-      <text x="46"  y="28" font-family="'Barlow Condensed',Arial Narrow,sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">I</text>
-      <rect x="59"  y="2" width="37" height="35" rx="1" fill="#1a1a1a"/>
-      <text x="77"  y="28" font-family="'Barlow Condensed',Arial Narrow,sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">D</text>
-      <rect x="98"  y="2" width="31" height="35" rx="1" fill="#1a1a1a"/>
-      <text x="113" y="28" font-family="'Barlow Condensed',Arial Narrow,sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">E</text>
-      <rect x="131" y="2" width="35" height="35" rx="1" fill="#1a1a1a"/>
-      <text x="148" y="28" font-family="'Barlow Condensed',Arial Narrow,sans-serif" font-weight="900" font-style="italic" font-size="26" fill="white" text-anchor="middle">O</text>
-      <!--
-        ШОН — Cyrillic glyphs rendered in Impact which has full Cyrillic support
-        Ш = W-shape (three downstrokes + base)
-        О = O-shape (round)
-        Н = H-shape (two verticals + crossbar) — this is the correct Cyrillic N
-        NOT И (which is backwards N) — Н is correct
-      -->
-      <text x="264" y="62"
-        font-family="Impact,Arial Black,sans-serif"
-        font-weight="900" font-style="italic" font-size="26"
-        fill="#CC0000" text-anchor="end" letter-spacing="0">ШОН</text>
+    <svg id="vw-logo" viewBox="0 0 175 68" xmlns="http://www.w3.org/2000/svg" aria-label="VIDEO WON" style="height:50px;width:auto;display:block">
+      <defs>
+        <style>
+          /* dark mode: white boxes, black letters */
+          .vw-box    { fill: #ffffff; }
+          .vw-letter { fill: #111111; }
+          /* light mode: black boxes, white letters */
+          [data-theme="light"] .vw-box    { fill: #111111; }
+          [data-theme="light"] .vw-letter { fill: #ffffff; }
+        </style>
+      </defs>
+
+      <!-- V -->
+      <rect class="vw-box" x="0"   y="0" width="36" height="37" rx="1"/>
+      <text class="vw-letter" x="18"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">V</text>
+      <!-- I -->
+      <rect class="vw-box" x="38"  y="0" width="22" height="37" rx="1"/>
+      <text class="vw-letter" x="49"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">I</text>
+      <!-- D -->
+      <rect class="vw-box" x="62"  y="0" width="38" height="37" rx="1"/>
+      <text class="vw-letter" x="81"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">D</text>
+      <!-- E -->
+      <rect class="vw-box" x="102" y="0" width="33" height="37" rx="1"/>
+      <text class="vw-letter" x="118" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">E</text>
+      <!-- O — right edge = 137+38 = 175 -->
+      <rect class="vw-box" x="137" y="0" width="38" height="37" rx="1"/>
+      <text class="vw-letter" x="156" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">O</text>
+
+      <!-- ШОN right-aligned to x=175 — Arial weight 100 italic, red -->
+      <text x="175" y="66"
+        font-family="Arial,Helvetica,sans-serif"
+        font-weight="100"
+        font-style="italic"
+        font-size="28"
+        fill="#CC0000"
+        text-anchor="end"
+        letter-spacing="1">ШОN</text>
     </svg>
   </div>
 
@@ -1005,8 +1014,9 @@ function recordPlay(idx){
   saveSession();
   if(typeof FTP_ANALYTICS!=='undefined') FTP_ANALYTICS.play(t,'catalogue');
   if(activeView==='chart') renderChart();
-  // push this video_id to front of recent order locally so tiles update immediately
-  tbRecentOrder = [t.id, ...tbRecentOrder.filter(id => id !== t.id)];
+  // push this exact track INDEX to front of recent order — NOT video_id,
+  // so other chapters sharing the same video_id don't float up with it
+  tbRecentOrder = [idx, ...tbRecentOrder.filter(i => i !== idx)];
   const hsNow = document.getElementById('hs-now');
   if (hsNow) hsNow.textContent = `▶ ${t.artist}`;
 }
@@ -1046,20 +1056,32 @@ async function tbFetch(pipe){
   if(!res.ok) throw new Error(`HTTP ${res.status}`);
   return (await res.json()).data||[];
 }
-let tbChartCache=null, tbCacheTime=0;
-// Universal recent plays order — fetched from Tinybird on load
-let tbRecentOrder = []; // array of video_ids in play order, most recent first
+// Universal recent plays order — stored as TRACK INDICES (not video IDs)
+let tbChartCache = null, tbCacheTime = 0;
+// This prevents all chapters sharing a video_id from all floating to the top
+// when only one chapter has been played.
+let tbRecentOrder = []; // array of TRACK INDICES in play order, most recent first
 
 async function fetchRecentOrder() {
   try {
     const rows = await tbFetch('recent_plays');
     if (rows?.length) {
-      // dedupe by video_id, keep most recent first
       const seen = new Set();
-      tbRecentOrder = rows
-        .filter(r => { if (seen.has(r.video_id)) return false; seen.add(r.video_id); return true; })
-        .map(r => r.video_id);
-      render(); // re-render tiles in new order
+      const indices = [];
+      for (const r of rows) {
+        // Find the specific track index — match on video_id only if we have
+        // no better info. We pick the FIRST match per video_id from the pipe
+        // (since the pipe doesn't store start time, we can't be more specific).
+        // Local plays always use exact index via recordPlay so this only
+        // affects the initial Tinybird-sourced order for tracks never played locally.
+        if (!seen.has(r.video_id)) {
+          seen.add(r.video_id);
+          const idx = TRACKS.findIndex(t => t.id === r.video_id);
+          if (idx >= 0) indices.push(idx);
+        }
+      }
+      tbRecentOrder = indices;
+      render();
     }
   } catch(e) { console.warn('[recent order]', e.message); }
 }
@@ -1191,12 +1213,12 @@ function getFiltered(){
   else if(sortBy==='dur')   a.sort((a,b)=>(b.t.end-b.t.start)-(a.t.end-a.t.start));
   else if(sortBy==='plays') a.sort((a,b)=>(playCounts[b.i]||0)-(playCounts[a.i]||0));
   else if(tbRecentOrder.length) {
-    // default: sort by universal recent plays from Tinybird
-    // tracks not in recent list go to end in their original order
-    const orderMap = new Map(tbRecentOrder.map((id,pos)=>[id,pos]));
-    a.sort((x,y)=>{
-      const px = orderMap.has(x.t.id) ? orderMap.get(x.t.id) : 99999;
-      const py = orderMap.has(y.t.id) ? orderMap.get(y.t.id) : 99999;
+    // Sort by position in recent-plays index list.
+    // orderMap keys are TRACK INDICES so each chapter is unique.
+    const orderMap = new Map(tbRecentOrder.map((trackIdx, pos) => [trackIdx, pos]));
+    a.sort((x, y) => {
+      const px = orderMap.has(x.i) ? orderMap.get(x.i) : 99999;
+      const py = orderMap.has(y.i) ? orderMap.get(y.i) : 99999;
       return px - py;
     });
   }
