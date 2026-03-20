@@ -1182,53 +1182,53 @@ document.addEventListener('keydown', e => {
 const volSlider=document.getElementById('vol-slider');
 const volIcon=document.getElementById('vol-icon');
 function applyVolume(v){
-  currentVolume = v;
-  volSlider.value = v;
-  volIcon.textContent = v===0?'🔇':v<50?'🔉':'🔊';
-  // send to srcdoc iframe — retry until contentWindow is ready
-  if(ytPlayer?._iframe){
-    const send = () => {
-      try { ytPlayer._iframe.contentWindow?.postMessage({cmd:'volume',value:v},'*'); }
-      catch(e){}
-    };
-    send();
-    // belt-and-suspenders: also send after short delay in case iframe was mid-load
-    setTimeout(send, 300);
-  }
+  currentVolume=v;
+  volSlider.value=v;
+  volIcon.textContent=v===0?'🔇':v<50?'🔉':'🔊';
+  if(ytPlayer?.setVolume) ytPlayer.setVolume(v);
 }
 volSlider.addEventListener('input',()=>applyVolume(parseInt(volSlider.value)));
 volIcon.addEventListener('click',()=>applyVolume(currentVolume>0?0:80));
 
 // ── WEIGHTED SHUFFLE ─────────────────────────────────────────────
-// Pick next track: weighted random favouring tracks not recently played.
-// Weight = 1 + (position in tbRecentOrder from the end, so least-recent = highest weight)
-// Tracks never played get maximum weight. Currently playing track is excluded.
+// Keeps a recent-play history to prevent looping.
+// Weight = higher for tracks played less recently or never played.
+const SHUFFLE_HISTORY_SIZE = Math.min(8, Math.floor(TRACKS.length * 0.1) || 4);
+let shuffleHistory = []; // recently played indices, most recent first
+
 function pickShuffleNext(){
-  const pool = filteredIdxs.filter(({i})=>i!==currentIdx);
-  if(!pool.length) return -1;
+  const pool = filteredIdxs.filter(({i}) => !shuffleHistory.includes(i));
+  // If pool is empty (tiny filtered set), fall back to excluding only current track
+  const fallback = filteredIdxs.filter(({i}) => i !== currentIdx);
+  const candidates = pool.length ? pool : fallback;
+  if(!candidates.length) return -1;
 
-  // Build weights — higher = more likely to be picked
-  const orderPos = new Map(tbRecentOrder.map((idx,pos)=>[idx,pos]));
-  const total = tbRecentOrder.length || 1;
+  // Build weights based on tbRecentOrder position
+  const orderLen = tbRecentOrder.length || 1;
+  const orderPos = new Map(tbRecentOrder.map((idx,pos) => [idx,pos]));
 
-  const weighted = pool.map(({i})=>{
-    const pos = orderPos.has(i) ? orderPos.get(i) : total; // never played = beyond end = highest
-    // recency penalty: recently played (pos=0) get weight 1, older/unplayed get up to total+1
-    const weight = (total - pos) + 1;
-    return {i, weight};
+  const weighted = candidates.map(({i}) => {
+    const pos = orderPos.has(i) ? orderPos.get(i) : orderLen;
+    // recently played = low weight, never played = highest weight
+    const w = (orderLen - pos) + 1;
+    return {i, w};
   });
 
-  // Weighted random selection
-  const totalWeight = weighted.reduce((s,w)=>s+w.weight, 0);
-  let rand = Math.random() * totalWeight;
-  for(const w of weighted){
-    rand -= w.weight;
-    if(rand <= 0) return w.i;
+  const total = weighted.reduce((s,x) => s+x.w, 0);
+  let r = Math.random() * total;
+  for(const x of weighted){
+    r -= x.w;
+    if(r <= 0) return x.i;
   }
   return weighted[weighted.length-1].i;
 }
 
 function onTrackEnd(){
+  // Add current to shuffle history before picking next
+  if(currentIdx >= 0){
+    shuffleHistory.unshift(currentIdx);
+    if(shuffleHistory.length > SHUFFLE_HISTORY_SIZE) shuffleHistory.pop();
+  }
   const next = pickShuffleNext();
   if(next >= 0) playTrack(next);
 }
@@ -1653,134 +1653,42 @@ function playTrack(idx){
 }
 
 function ensureYT(cb){
-  // srcdoc approach: YT API loads inside the iframe, not on parent page
-  // so we can call buildYTPlayer immediately — no waiting needed
-  cb();
+  if(ytReady){cb();return;}
+  if(!ytApiLoading){
+    ytApiLoading=true;
+    const s=document.createElement('script');
+    s.src='https://www.youtube.com/iframe_api';
+    document.head.appendChild(s);
+  }
+  const w=setInterval(()=>{if(ytReady){clearInterval(w);cb();}},100);
 }
-window.onYouTubeIframeAPIReady=()=>{}; // no-op, kept for safety
+window.onYouTubeIframeAPIReady=()=>{ytReady=true;};
 
 function buildYTPlayer(t){
-  const inner = document.getElementById('yt-inner');
-  inner.innerHTML = '';
-
-  // srcdoc approach — loads YT inside a same-origin page so we can
-  // inject CSS targeting .ytp- elements via MutationObserver
-  const srcdoc = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#000}
-#player{width:100%;height:100%}
-/* suppress all YT chrome via attribute selector — catches any class starting ytp- */
-[class^="ytp-endscreen"],[class*=" ytp-endscreen"],
-[class^="ytp-ce-"],[class*=" ytp-ce-"],
-.ytp-chrome-top,.ytp-chrome-bottom,
-.ytp-gradient-top,.ytp-gradient-bottom,
-.ytp-pause-overlay,.ytp-watermark,
-.ytp-spinner,.ytp-bezel-remote,
-.ytp-cards-button,.ytp-cards-teaser,
-.ytp-share-button-visible,
-.ytp-title,.ytp-title-channel,
-.ytp-endscreen-content{
-  display:none!important;
-  opacity:0!important;
-  pointer-events:none!important;
-}
-</style>
-</head>
-<body>
-<div id="player"></div>
-<script src="https://www.youtube.com/iframe_api"><\/script>
-<script>
-var player;
-var pending = null;
-
-window.onYouTubeIframeAPIReady = function(){
-  player = new YT.Player('player',{
-    width:'100%', height:'100%',
-    videoId:'${t.id}',
+  const inner=document.getElementById('yt-inner');
+  inner.innerHTML='';
+  const div=document.createElement('div');
+  div.id='yt-p';
+  inner.appendChild(div);
+  ytPlayer=new YT.Player('yt-p',{
+    width:'320', height:'260',
+    videoId:t.id,
     playerVars:{
-      start:${t.start},
-      ${t.end ? `end:${t.end},` : ''}
+      start:t.start, end:t.end||undefined,
       autoplay:1, controls:0, rel:0, modestbranding:1,
       disablekb:1, iv_load_policy:3, fs:0, playsinline:1,
-      cc_load_policy:0, origin: window.location.origin
+      cc_load_policy:0,
     },
     events:{
-      onReady: function(e){
-        e.target.setVolume(${currentVolume});
-        // MutationObserver to catch dynamically injected ytp- elements
-        var obs = new MutationObserver(function(){
-          var all = document.querySelectorAll('[class*="ytp-endscreen"],[class*="ytp-ce-"],[class*="ytp-pause-overlay"]');
-          all.forEach(function(el){ el.style.display='none'; el.style.opacity='0'; });
-        });
-        obs.observe(document.body, {childList:true, subtree:true, attributes:true});
-        window.parent.postMessage({type:'ytready'},'*');
+      onReady(e){
+        e.target.setVolume(currentVolume);
       },
-      onStateChange: function(e){
-        window.parent.postMessage({type:'ytstate', state:e.data},'*');
+      onStateChange(e){
+        if(e.data===YT.PlayerState.ENDED)   onTrackEnd();
+        if(e.data===YT.PlayerState.PLAYING){isPlaying=true;  document.getElementById('btn-play').textContent='⏸';}
+        if(e.data===YT.PlayerState.PAUSED) {isPlaying=false; document.getElementById('btn-play').textContent='▶';}
       }
     }
-  });
-};
-
-// Listen for commands from parent
-window.addEventListener('message', function(e){
-  if(!player) { pending = e.data; return; }
-  var d = e.data;
-  if(d.cmd==='play')    player.playVideo();
-  if(d.cmd==='pause')   player.pauseVideo();
-  if(d.cmd==='volume')  player.setVolume(d.value);
-  if(d.cmd==='seek')    player.seekTo(d.value, true);
-  if(d.cmd==='load')    player.loadVideoById({videoId:d.videoId, startSeconds:d.start, endSeconds:d.end});
-  if(d.cmd==='getTime') window.parent.postMessage({type:'currentTime', value:player.getCurrentTime()},'*');
-});
-<\/script>
-</body>
-</html>`;
-
-  const iframe = document.createElement('iframe');
-  iframe.setAttribute('srcdoc', srcdoc);
-  iframe.style.cssText = 'width:100%;height:100%;border:none;display:block;';
-  iframe.allow = 'autoplay; encrypted-media';
-  iframe.setAttribute('allowfullscreen', '');
-  inner.appendChild(iframe);
-
-  // Store reference — communicate via postMessage instead of YT API directly
-  ytPlayer = {
-    _iframe: iframe,
-    _send(cmd){
-      try { iframe.contentWindow?.postMessage(cmd,'*'); }
-      catch(e){}
-    },
-    playVideo(){ this._send({cmd:'play'}); },
-    pauseVideo(){ this._send({cmd:'pause'}); },
-    setVolume(v){
-      currentVolume=v;
-      this._send({cmd:'volume', value:v});
-      setTimeout(()=>this._send({cmd:'volume', value:v}), 300);
-    },
-    seekTo(s){ this._send({cmd:'seek', value:s}); },
-    loadVideoById(o){ this._send({cmd:'load', videoId:o.videoId, start:o.startSeconds||0, end:o.endSeconds||0}); },
-    getCurrentTime(){ return _lastCurrentTime; },
-  };
-
-  // Listen for messages back from the srcdoc iframe
-  window.addEventListener('message', function ytMsg(e){
-    if(!e.data?.type) return;
-    if(e.data.type==='ytready'){
-      // Apply current volume as soon as player is ready
-      ytPlayer._send({cmd:'volume', value:currentVolume});
-    }
-    if(e.data.type==='ytstate'){
-      const YT_ENDED=0, YT_PLAYING=1, YT_PAUSED=2;
-      if(e.data.state===YT_ENDED)   onTrackEnd();
-      if(e.data.state===YT_PLAYING){isPlaying=true;  document.getElementById('btn-play').textContent='⏸';}
-      if(e.data.state===YT_PAUSED) {isPlaying=false; document.getElementById('btn-play').textContent='▶';}
-    }
-    if(e.data.type==='currentTime') _lastCurrentTime = e.data.value;
   });
 }
 
@@ -1794,14 +1702,13 @@ function onTrackEnd(){
 function startProgress(t){
   clearInterval(progInterval);
   const dur=Math.max(0,t.end-t.start); if(!dur) return;
-  // Poll time from srcdoc iframe every 500ms via postMessage
   progInterval=setInterval(()=>{
     if(!ytPlayer||!isPlaying) return;
-    // Request current time from iframe
-    ytPlayer._send({cmd:'getTime'});
-    const cur=Math.max(0,_lastCurrentTime-t.start);
-    document.getElementById('prog-fill').style.width=Math.min(100,(cur/dur)*100)+'%';
-    document.getElementById('prog-cur').textContent=fmtDur(Math.floor(cur));
+    try{
+      const cur=Math.max(0,ytPlayer.getCurrentTime()-t.start);
+      document.getElementById('prog-fill').style.width=Math.min(100,(cur/dur)*100)+'%';
+      document.getElementById('prog-cur').textContent=fmtDur(Math.floor(cur));
+    }catch(e){}
   },500);
 }
 
@@ -1813,7 +1720,7 @@ document.getElementById('prog-track').addEventListener('click',e=>{
   if(!ytPlayer||currentIdx<0)return;
   const t=TRACKS[currentIdx];
   const pct=(e.clientX-e.currentTarget.getBoundingClientRect().left)/e.currentTarget.offsetWidth;
-  ytPlayer.seekTo(t.start+pct*(t.end-t.start));
+  ytPlayer.seekTo(t.start+pct*(t.end-t.start),true);
 });
 
 // Video panel
