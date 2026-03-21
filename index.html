@@ -50,9 +50,26 @@ body::before {
     background-image: url(images/nooktv.png);
     font-size: 0;
 }
-    .ch-card[data-ch-num="3"] .ch-thumb-fb-num {
+.ch-card[data-ch-num="3"] .ch-thumb-fb-num {
     background-image: url(images/logo-S.png);
     font-size: 0;
+}
+
+/* CH8 VIDEO WON — logo rendered via inline SVG injected by JS */
+.ch-card[data-ch-num="8"] .ch-thumb-fb {
+  background: #111;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+.ch-card[data-ch-num="8"] .ch-thumb-fb-num {
+  font-size: 0;
+  background: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
   .ch-thumb-fb-num {
 color: var(--text-lo);
@@ -307,7 +324,7 @@ const CHANNELS = [
     live:     true,
     href:     'https://fromtheplace.github.io/ftptv/',
     featured: false,
-    thumb:    null,           // e.g. 'images/ohhh-cover.jpg'
+    thumb:    null,
     thumbId:  null,
     nowPlaying: {
       type:    'fetchjs',
@@ -315,10 +332,29 @@ const CHANNELS = [
       varName: 'videoPlaylist',
     },
     },
+  {
+    num:      8,
+    name:     'VIDEO WON',
+    tag:      'CATALOGUE',
+    desc:     'Ōtepoti music catalogue — clips, sets & sessions',
+    live:     false,
+    href:     'cat7.html',
+    featured: false,
+    thumb:    null,
+    thumbId:  null,
+    nowPlaying: {
+      type:    'tinybird',
+      // fetches #1 from chart_scores pipe
+    },
+  },
 ];
 
 // Wire CH1's local playlist (already available from FTP_MEGA.js <script> above)
 CHANNELS[0].nowPlaying.playlist = videoPlaylist;
+
+// ── Tinybird config for VIDEO WON #1 ──────────────────────────────
+const TB_HOST     = 'https://api.europe-west2.gcp.tinybird.co';
+const TB_READ_TOK = 'p.eyJ1IjogIjkxM2Y0MzdlLTc5OTItNGJjYS05MTY1LWQzYzBiMmE0ZGRkNiIsICJpZCI6ICIwZTk0NzZmMy0xMDI5LTRiZGMtYjZhNy1jNDQ4MDBmY2E3YTIiLCAiaG9zdCI6ICJnY3AtZXVyb3BlLXdlc3QyIn0.-CzFOa6KiJG9GeE8aA83Wcz7Ty7nlh2PjvWWcbew2Nc';
 
 // ══════════════════════════════════════════════════════════════════
 //  LIVE POSITION ENGINE  (same logic as channel.html)
@@ -405,6 +441,24 @@ async function resolveNowPlaying(ch) {
 
   if (np.type === 'static') {
     return { text: np.text, videoId: null };
+  }
+
+  if (np.type === 'tinybird') {
+    try {
+      const res  = await fetch(`${TB_HOST}/v0/pipes/chart_scores.json?token=${TB_READ_TOK}`, { cache: 'no-store' });
+      const data = await res.json();
+      const rows = data?.data;
+      if (!rows?.length) return { text: '#1 — No data yet', videoId: null };
+      // Sort by ftp_score desc, take #1
+      const top = [...rows].sort((a,b) => parseFloat(b.ftp_score||0) - parseFloat(a.ftp_score||0))[0];
+      const artist = top.artist || top.title || '—';
+      const title  = top.title  || '';
+      const label  = artist !== title && title ? `${artist} — ${title}` : artist;
+      return { text: `#1  ${label}`, videoId: top.video_id || null };
+    } catch(e) {
+      console.warn('[portal] Tinybird chart fetch:', e.message);
+      return { text: '#1 — unavailable', videoId: null };
+    }
   }
 
   return null;
@@ -508,6 +562,26 @@ function buildCard(ch, grid) {
 
   grid.appendChild(card);
   cardMap[ch.num] = card;
+
+  // CH8 VIDEO WON — inject inline SVG logo into fallback plate
+  if (ch.num === 8) {
+    const fbNum = card.querySelector('.ch-thumb-fb-num');
+    if (fbNum) {
+      fbNum.innerHTML = `<svg id="vw-logo" viewBox="0 0 175 75" xmlns="http://www.w3.org/2000/svg" aria-label="VIDEO WON" style="width:75%;height:auto;display:block">
+  <rect style="fill:#ffffff" x="0"   y="0" width="36" height="37" rx="1"/>
+  <text style="fill:#111111" x="15"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">V</text>
+  <rect style="fill:#ffffff" x="38"  y="0" width="22" height="37" rx="1"/>
+  <text style="fill:#111111" x="46"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">I</text>
+  <rect style="fill:#ffffff" x="62"  y="0" width="38" height="37" rx="1"/>
+  <text style="fill:#111111" x="79"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">D</text>
+  <rect style="fill:#ffffff" x="102" y="0" width="33" height="37" rx="1"/>
+  <text style="fill:#111111" x="115" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">E</text>
+  <rect style="fill:#ffffff" x="137" y="0" width="38" height="37" rx="1"/>
+  <text style="fill:#111111" x="153" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">O</text>
+  <text x="175" y="74" font-family="Arial,Helvetica,sans-serif" font-weight="100" font-style="italic" font-size="43" fill="#CC0000" text-anchor="end" letter-spacing="4">ШОN</text>
+</svg>`;
+    }
+  }
 
   // Resolve now-playing async
   resolveNowPlaying(ch).then(result => {
