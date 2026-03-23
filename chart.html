@@ -90,9 +90,7 @@ body {
 }
 [data-theme="light"] #clock { color: var(--red); text-shadow: none; }
 [data-theme="light"] #clock::before { color: rgba(204,0,0,0.08); }
-[data-theme="light"] .mast-search input { background: #f0f0f0; border-color: #ccc; color: #111; }
-[data-theme="light"] .mast-search input::placeholder { color: #aaa; }
-[data-theme="light"] .mast-search::before { color: #aaa; }
+[data-theme="light"] .mast-search input::placeholder { color: var(--text-dim); }
 [data-theme="light"] .on-air-bug { background: var(--red); }
 [data-theme="light"] .gui-btn { color: #444; border-color: #ccc; }
 [data-theme="light"] .gui-btn:hover { color: #000; border-color: #888; }
@@ -214,19 +212,23 @@ body {
 /* ── SEARCH with clear button ────────────────────────────────────── */
 .mast-search { flex: 1; max-width: 300px; position: relative; }
 .mast-search input {
-  width: 100%; background: #222; border: 1px solid #333; border-bottom: 2px solid var(--red);
-  color: var(--white); padding: 6px 28px 6px 26px;
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-bottom: 2px solid var(--red);
+  color: var(--text-hi);
+  padding: 6px 28px 6px 26px;
   font-family: var(--font-mono); font-size: 0.8rem; outline: none;
   transition: border-color 0.15s, background 0.15s;
 }
-.mast-search input:focus { background: #2a2a2a; border-color: var(--red); }
-.mast-search input::placeholder { color: #555; }
-.mast-search::before { content: '⌕'; position: absolute; left: 7px; top: 50%; transform: translateY(-50%); color: #555; font-size: 14px; pointer-events: none; z-index: 1; }
+.mast-search input:focus { background: var(--surface); border-color: var(--red); }
+.mast-search input::placeholder { color: var(--text-dim); }
+.mast-search::before { content: '⌕'; position: absolute; left: 7px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 14px; pointer-events: none; z-index: 1; }
 /* X clear button */
 #search-clear {
   position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; color: #555; font-size: 13px; cursor: pointer;
-  padding: 2px 4px; line-height: 1; display: none; /* hidden until there's input */
+  background: none; border: none; color: var(--text-dim); font-size: 13px; cursor: pointer;
+  padding: 2px 4px; line-height: 1; display: none;
   z-index: 1;
 }
 #search-clear:hover { color: var(--red); }
@@ -526,23 +528,25 @@ body {
 ══════════════════════════════════════════════════════════════════ */
 .chart-wrap { padding: 0 14px 14px; }
 .chart-header {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
   padding: 8px 0 10px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
 }
+.chart-genre-pills { display: flex; flex-wrap: wrap; gap: 4px; margin-left: 4px; }
+.chart-genre-pill {
+  font-family: var(--font-cond); font-weight: 700; font-size: 0.55rem;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  padding: 2px 8px; border: 1px solid var(--border);
+  background: none; color: var(--text-dim); cursor: pointer;
+  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+  transition: all 0.1s;
+}
+.chart-genre-pill:hover { color: var(--text); border-color: var(--border-hi); }
+.chart-genre-pill.active { color: #000; border-color: transparent; }
 .chart-source-badge {
   font-family: var(--font-cond); font-weight: 700; font-size: 0.55rem; letter-spacing: 0.2em;
   text-transform: uppercase; padding: 2px 7px; color: #fff; background: var(--red);
 }
-/* period buttons live in the view-tabs strip — large display font */
-#chart-subnav { display: none; align-items: stretch; margin-left: auto; }
-.chart-period-btn {
-  font-family: var(--font-disp); font-size: 1.6rem; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--text-dim);
-  padding: 8px 14px; border: none; border-bottom: 3px solid transparent;
-  background: none; cursor: pointer; transition: all 0.12s; line-height: 1; white-space: nowrap;
-}
-.chart-period-btn:hover { color: var(--text); }
-.chart-period-btn.active { color: var(--text-hi); border-bottom-color: var(--red); }
+/* period buttons and timeline removed — chart is single ranked view with genre pills */
 .chart-list { display: flex; flex-direction: column; border: 1px solid var(--border); margin-bottom: 14px; }
 .chart-row {
   display: grid; grid-template-columns: 28px 44px 1fr 32px;
@@ -572,40 +576,6 @@ body {
 .chart-move.new  { color: var(--yellow); font-size: 0.75rem; } /* yellow star — new entry */
 .chart-move.same { color: var(--text-lo); }
 
-/* genre breakdown */
-.chart-breakdown { border: 1px solid var(--border); padding: 12px; display: flex; flex-direction: column; gap: 0; }
-.breakdown-title { font-family: var(--font-disp); font-size: 1.1rem; color: var(--text-hi); margin-bottom: 10px; letter-spacing: 0.08em; }
-.breakdown-row { margin-bottom: 7px; }
-.breakdown-genre-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
-.breakdown-name { font-family: var(--font-cond); font-weight: 700; font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; }
-.breakdown-count { font-family: var(--font-disp); font-size: 1rem; }
-.breakdown-bar-track { height: 2px; background: var(--border); }
-.breakdown-bar-fill { height: 2px; transition: width 1s ease; }
-
-/* timeline */
-.chart-timeline { border: 1px solid var(--border); }
-.timeline-head {
-  padding: 7px 12px; border-bottom: 1px solid var(--border);
-  display: flex; justify-content: space-between; align-items: center;
-  font-family: var(--font-cond); font-weight: 700; font-size: 0.6rem;
-  letter-spacing: 0.28em; color: var(--text-dim); text-transform: uppercase;
-}
-.timeline-entry {
-  display: flex; align-items: center; gap: 9px; padding: 6px 12px;
-  border-bottom: 1px solid rgba(46,46,46,0.4); cursor: pointer; transition: background 0.08s;
-}
-.timeline-entry:last-child { border-bottom: none; }
-.timeline-entry:hover { background: var(--surface); }
-.timeline-time { font-family: var(--font-lcd); font-size: 0.9rem; color: var(--red); width: 44px; flex-shrink: 0; text-shadow: 0 0 6px rgba(204,0,0,0.5); }
-.timeline-thumb { width: 34px; height: 22px; object-fit: cover; flex-shrink: 0; filter: saturate(0.4) brightness(0.7); }
-.timeline-info { flex: 1; min-width: 0; }
-.timeline-title { font-family: var(--font-cond); font-weight: 700; font-size: 0.72rem; color: var(--text-hi); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.timeline-artist { font-size: 0.62rem; color: var(--text-dim); }
-.timeline-tag {
-  font-family: var(--font-cond); font-weight: 900; font-size: 0.5rem; letter-spacing: 0.14em;
-  padding: 2px 5px; color: #000; text-transform: uppercase; flex-shrink: 0;
-  clip-path: polygon(3px 0%, 100% 0%, calc(100% - 3px) 100%, 0% 100%);
-}
 .chart-loading { padding: 30px; text-align: center; font-family: var(--font-cond); font-size: 0.72rem; letter-spacing: 0.24em; color: var(--text-dim); text-transform: uppercase; }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -745,33 +715,41 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
 [data-theme="light"] #theme-corner { color: #888; text-shadow: none; }
 #theme-corner:hover { border-color: var(--red); transform: scale(1.1); }
 
-/* ── VOTE BUTTON ─────────────────────────────────────────────────── */
+/* ── VOTE BUTTON — pill with heart icon ──────────────────────────── */
 .tile-vote {
-  position: absolute; bottom: 38px; right: 6px; z-index: 5;
-  background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.25);
-  color: rgba(255,255,255,0.6); font-size: 11px;
-  width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: all 0.12s; border-radius: 2px;
+  position: absolute; bottom: 6px; right: 6px; z-index: 5;
+  background: rgba(0,0,0,0.65);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.75);
+  min-width: 34px; height: 24px; padding: 0 7px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;
+  transition: all 0.15s; border-radius: 12px;
+  font-family: var(--font-cond); font-weight: 700; font-size: 0.6rem; letter-spacing: 0.06em;
 }
-.tile-vote:hover { border-color: var(--red); color: var(--red); transform: scale(1.1); }
-.tile-vote.voted { border-color: var(--red); color: var(--red); background: var(--red-glow); }
-/* light mode vote — dark background so arrow is visible over light thumbs */
-[data-theme="light"] .tile-vote {
-  background: rgba(0,0,0,0.65); border-color: rgba(255,255,255,0.3); color: #fff;
-}
+.tile-vote::before { content: '♡'; font-size: 13px; line-height: 1; transition: all 0.15s; }
+.tile-vote:hover { border-color: var(--red); color: var(--red); transform: scale(1.06); }
+.tile-vote:hover::before { content: '♥'; }
+.tile-vote.voted { border-color: var(--red); color: #fff; background: var(--red); }
+.tile-vote.voted::before { content: '♥'; }
+[data-theme="light"] .tile-vote { background: rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.3); color: #fff; }
 [data-theme="light"] .tile-vote:hover { border-color: var(--red); color: var(--red); }
-[data-theme="light"] .tile-vote.voted { background: rgba(204,0,0,0.85); border-color: var(--red); color: #fff; }
+[data-theme="light"] .tile-vote.voted { background: var(--red); border-color: var(--red); color: #fff; }
+
+/* player bar vote */
 .player-vote {
-  background: none; border: 1px solid #444; color: #666;
-  font-size: 13px; padding: 5px 8px; cursor: pointer; transition: all 0.12s;
-  flex-shrink: 0; display: flex; align-items: center; gap: 4px;
+  background: none; border: 1.5px solid var(--border-hi); color: var(--text-dim);
+  font-size: 0.7rem; padding: 4px 10px; cursor: pointer; transition: all 0.15s;
+  flex-shrink: 0; display: flex; align-items: center; gap: 5px;
+  border-radius: 12px; font-family: var(--font-cond); font-weight: 700; letter-spacing: 0.05em;
 }
+.player-vote::before { content: '♡'; font-size: 15px; line-height: 1; }
 .player-vote:hover { border-color: var(--red); color: var(--red); }
-.player-vote.voted { border-color: var(--red); color: var(--red); background: var(--red-glow); }
-/* light mode player vote */
+.player-vote:hover::before { content: '♥'; }
+.player-vote.voted { border-color: var(--red); color: #fff; background: var(--red); }
+.player-vote.voted::before { content: '♥'; }
 [data-theme="light"] .player-vote { border-color: #ccc; color: #888; }
 [data-theme="light"] .player-vote:hover { border-color: var(--red); color: var(--red); }
-.player-vote-count { font-family: var(--font-mono); font-size: 0.65rem; color: var(--red); }
+.player-vote-count { font-family: var(--font-mono); font-size: 0.6rem; }
 
 /* scrollbar */
 ::-webkit-scrollbar { width: 3px; }
@@ -811,15 +789,12 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   }
   .view-tabs::-webkit-scrollbar { display: none; }
   .view-tab { padding: 8px 14px; font-size: 1.5rem; flex-shrink: 0; }
-  #chart-subnav { flex-shrink: 0; }
-  .chart-period-btn { font-size: 1.3rem; padding: 8px 12px; }
 
   #tile-grid { grid-template-columns: repeat(2, 1fr); }
   .list-header, .list-row { grid-template-columns: 26px 1fr 52px; }
   .list-header > *:nth-child(4), .list-header > *:nth-child(5),
   .list-row > *:nth-child(4), .list-row > *:nth-child(5) { display: none; }
   .chart-top { grid-template-columns: 1fr; }
-  .chart-breakdown { display: none; }
   .progress-wrap { width: 100px; }
   .prog-time { display: none; }
   .vol-wrap { display: none; }
@@ -903,7 +878,7 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
     <button id="theme-corner" title="Toggle theme">☀</button>
     <div class="gui-sep"></div>
     <a class="mast-link" href="channel.html">CH 01</a>
-    <a class="mast-link" href="portal.html">PORTAL</a>
+    <a class="mast-link" href="/">PORTAL</a>
   </div>
 </header>
 
@@ -918,11 +893,8 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
         <button class="view-tab active" data-view="tiles">Clips</button>
         <button class="view-tab" data-view="list">List</button>
         <button class="view-tab" data-view="chart">Chart</button>
-        <!-- chart sub-nav — shown only when chart is active -->
+        <!-- chart sub-nav removed — single chart view only -->
         <div id="chart-subnav" style="display:none">
-          <button class="chart-period-btn active" data-period="plays">Top Played</button>
-          <button class="chart-period-btn" data-period="recent">Recent</button>
-          <button class="chart-period-btn" data-period="genre">By Genre</button>
         </div>
       </div>
 
@@ -946,12 +918,9 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
         <div class="chart-wrap">
           <div class="chart-header">
             <span class="chart-source-badge" id="chart-badge">TINYBIRD LIVE</span>
+            <div id="chart-genre-pills" class="chart-genre-pills"></div>
           </div>
           <div class="chart-list" id="chart-list"><div class="chart-loading" id="chart-loading">Loading…</div></div>
-          <div class="chart-timeline" id="chart-timeline">
-            <div class="timeline-head"><span>Play History</span><span id="history-count">—</span></div>
-            <div id="timeline-entries"><div class="chart-loading">Loading…</div></div>
-          </div>
         </div>
       </div>
     </div>
@@ -997,7 +966,7 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
     <button class="ctrl" id="btn-next">▶▶</button>
   </div>
   <button class="toggle-video" id="toggle-video">VIDEO</button>
-  <button class="player-vote" id="player-vote" title="Vote for this track">▲ <span class="player-vote-count" id="player-vote-count"></span></button>
+  <button class="player-vote" id="player-vote" title="Vote for this track"><span class="player-vote-count" id="player-vote-count"></span></button>
 </div>
 
 <script src="ftp_uber_list.js"></script>
@@ -1118,6 +1087,7 @@ async function fetchRecentOrder() {
 //  STATE
 // ══════════════════════════════════════════════════════════════════
 let activeGenre='ALL', searchTerm='', sortBy='default', activeView='tiles', chartPeriod='plays';
+let activeChartGenre='ALL'; // genre filter within chart view
 let filteredIdxs=[], currentIdx=-1, isPlaying=false;
 let ytPlayer=null, ytReady=false, ytApiLoading=false, progInterval=null;
 let videoOn=false, currentVolume=80;
@@ -1202,16 +1172,6 @@ document.getElementById('vid-fullscreen-btn').addEventListener('click', () => {
   btn.textContent = isFs ? '✕' : '⛶';
   btn.title = isFs ? 'Exit fullscreen' : 'Fullscreen';
 });
-// ESC exits fullscreen
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    const panel = document.getElementById('vid-panel');
-    if (panel.classList.contains('fullscreen')) {
-      panel.classList.remove('fullscreen');
-      document.getElementById('vid-fullscreen-btn').textContent = '⛶';
-    }
-  }
-});
 
 // ── VOLUME ───────────────────────────────────────────────────────
 const volSlider=document.getElementById('vol-slider');
@@ -1285,14 +1245,7 @@ async function buildFeaturedColumn() {
     <div class="feat-skeleton" id="feat-number1">Loading…</div>
     <div class="feat-head">Last Week's</div>
     <div class="feat-skeleton" id="feat-week">Loading…</div>
-    <div class="feat-head">Latest Entry</div>
-    <div class="feat-skeleton" id="feat-latest">Loading…</div>
   `;
-
-  // Latest entry — last track in TRACKS array (most recently added)
-  const latestTrack = TRACKS[TRACKS.length - 1];
-  latestTrack._idx = TRACKS.length - 1;
-  document.getElementById('feat-latest').outerHTML = featTileHTML(latestTrack, TRACKS.length-1 === currentIdx);
 
   // Pull Tinybird chart data
   try {
@@ -1335,7 +1288,6 @@ async function buildFeaturedColumn() {
       const idx = parseInt(tile.dataset.idx);
       if (idx >= 0) playTrack(idx);
       else {
-        // fallback: find by video_id
         const vid = tile.dataset.videoId;
         const fi = TRACKS.findIndex(t => t.id === vid);
         if (fi >= 0) playTrack(fi);
@@ -1357,18 +1309,9 @@ document.querySelectorAll('.view-tab').forEach(tab=>{
     document.getElementById('tile-view').style.display  = activeView==='tiles'?'block':'none';
     document.getElementById('list-view').style.display  = activeView==='list' ?'block':'none';
     document.getElementById('chart-view').style.display = activeView==='chart'?'block':'none';
-    const subnav=document.getElementById('chart-subnav');
-    if(subnav) subnav.style.display = activeView==='chart'?'flex':'none';
     if(activeView==='chart') renderChart();
   });
 });
-document.querySelectorAll('.chart-period-btn').forEach(b=>b.addEventListener('click',()=>{
-  chartPeriod=b.dataset.period;
-  document.querySelectorAll('.chart-period-btn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  tbChartCache=null;
-  renderChart();
-}));
 
 // ══════════════════════════════════════════════════════════════════
 //  RENDER TILES
@@ -1389,7 +1332,7 @@ function renderTiles(items){
         <div class="tile-thumb-fb" style="display:none">${t.genre}</div>
         <span class="tile-genre" style="background:${gc(t.genre)}">${t.genre}</span>
         <span class="tile-playing-badge">▶ ON AIR</span>
-        <button class="tile-vote${hasVoted(t.id)?' voted':''}" data-idx="${i}" title="Vote">▲</button>
+        <button class="tile-vote${hasVoted(t.id)?' voted':''}" data-idx="${i}" title="Vote"></button>
         <div class="tile-np">
           ${pc?`<div class="tile-np-plays">${pc}× played</div>`:''}
           <div class="tile-np-title">${esc(t.song||t.title)}</div>
@@ -1461,16 +1404,13 @@ function renderList(items){
 async function renderChart(){
   const listEl=document.getElementById('chart-list');
   const badge=document.getElementById('chart-badge');
-  const timelineEl=document.getElementById('timeline-entries');
-  const histCount=document.getElementById('history-count');
 
   listEl.innerHTML='<div class="chart-loading">Loading chart…</div>';
 
-  // Try Tinybird — with 10-min cache
-  let usedTB=false, ranked=[];
+  let usedTB=false, allRanked=[];
   try {
     const now=Date.now();
-    if(!tbChartCache || now-tbCacheTime>600_000 || chartPeriod==='recent'){
+    if(!tbChartCache || now-tbCacheTime>600_000){
       tbChartCache=await tbFetch('chart_scores');
       tbCacheTime=now;
     }
@@ -1480,66 +1420,86 @@ async function renderChart(){
       badge.textContent='TINYBIRD LIVE';
       badge.style.background='var(--red)';
 
-      if(chartPeriod==='plays'){
-        // Load previous rank snapshot from localStorage
-        let prevRanks = {};
-        try { prevRanks = JSON.parse(localStorage.getItem('vw_prev_ranks') || '{}'); } catch(e){}
-        const isFirstLoad = Object.keys(prevRanks).length === 0;
+      let prevRanks={};
+      try{ prevRanks=JSON.parse(localStorage.getItem('vw_prev_ranks')||'{}'); }catch(e){}
+      const isFirstLoad=Object.keys(prevRanks).length===0;
 
-        const sorted = [...rows].sort((a,b)=>parseFloat(b.ftp_score||0)-parseFloat(a.ftp_score||0)).slice(0,15);
+      const sorted=[...rows].sort((a,b)=>parseFloat(b.ftp_score||0)-parseFloat(a.ftp_score||0)).slice(0,40);
 
-        ranked = sorted.map((r,n)=>{
-          const curRank  = n + 1;
-          const prevRank = prevRanks[r.video_id];
-          let momentum = '—';
-          if (isFirstLoad) {
-            momentum = 'NEW'; // first ever load — everything is new
-          } else if (prevRank === undefined) {
-            momentum = '↑'; // entered the chart — treat as rising
-          } else {
-            if (curRank < prevRank)       momentum = '↑';
-            else if (curRank > prevRank)  momentum = '↓';
-          }
-          return {
-            videoId: r.video_id, title: r.title, artist: r.artist, genre: r.genre,
-            cnt: parseInt(r.total_plays)||0, score: Math.round(parseFloat(r.ftp_score)||0),
-            momentum
-          };
-        });
+      allRanked=sorted.map((r,n)=>{
+        const curRank=n+1, prevRank=prevRanks[r.video_id];
+        let momentum='—';
+        if(isFirstLoad) momentum='NEW';
+        else if(prevRank===undefined) momentum='↑';
+        else if(curRank<prevRank) momentum='↑';
+        else if(curRank>prevRank) momentum='↓';
+        return{videoId:r.video_id,title:r.title,artist:r.artist,genre:r.genre,
+               cnt:parseInt(r.total_plays)||0,score:Math.round(parseFloat(r.ftp_score)||0),momentum};
+      });
 
-        // Save current ranks for next visit
-        const newSnapshot = {};
-        sorted.forEach((r,n) => { newSnapshot[r.video_id] = n+1; });
-        try { localStorage.setItem('vw_prev_ranks', JSON.stringify(newSnapshot)); } catch(e){}
+      // Save snapshot
+      const snap={};
+      sorted.forEach((r,n)=>{snap[r.video_id]=n+1;});
+      try{localStorage.setItem('vw_prev_ranks',JSON.stringify(snap));}catch(e){}
 
-      } else if(chartPeriod==='recent'){
-        const recent=await tbFetch('recent_plays');
-        const seen=new Set();
-        ranked=recent.filter(r=>{if(seen.has(r.video_id))return false;seen.add(r.video_id);return true;})
-          .slice(0,15).map(r=>({videoId:r.video_id,title:r.title,artist:r.artist,genre:r.genre,cnt:0,score:0,momentum:'NEW'}));
-      } else {
-        const byG={};rows.forEach(r=>{if(!byG[r.genre]||parseFloat(r.ftp_score||0)>parseFloat(byG[r.genre].ftp_score||0))byG[r.genre]=r;});
-        ranked=Object.values(byG).sort((a,b)=>parseFloat(b.ftp_score||0)-parseFloat(a.ftp_score||0))
-          .map(r=>({videoId:r.video_id,title:r.title,artist:r.artist,genre:r.genre,cnt:parseInt(r.total_plays)||0,score:Math.round(parseFloat(r.ftp_score)||0),momentum:'—'}));
-      }
+      // Build genre pills from available genres in data
+      buildChartGenrePills([...new Set(allRanked.map(r=>r.genre).filter(Boolean))]);
     }
   } catch(e){ console.warn('[vw] Tinybird:',e.message); }
 
-  // Tinybird only — no session fallback
-  if(!usedTB || !ranked.length){
+  if(!usedTB || !allRanked.length){
     badge.textContent='NO DATA YET';
     badge.style.background='#444';
-    listEl.innerHTML=`<div class="chart-loading">No plays recorded yet on VIDEO WON — start listening to build the chart</div>`;
-    timelineEl.innerHTML=`<div class="chart-loading">No recent plays</div>`;
-    histCount.textContent='—';
+    listEl.innerHTML=`<div class="chart-loading">No plays recorded yet — start listening to build the chart</div>`;
     return;
   }
 
-  // Render list — no points shown, blue down arrow for overtaken
+  renderChartRows(allRanked);
+}
+
+function buildChartGenrePills(genres){
+  const pillsEl=document.getElementById('chart-genre-pills');
+  if(!pillsEl) return;
+  const all=['ALL',...genres.sort()];
+  pillsEl.innerHTML=all.map(g=>`
+    <button class="chart-genre-pill${activeChartGenre===g?' active':''}"
+            data-genre="${g}"
+            ${g!=='ALL'?`style="background:${activeChartGenre===g?gc(g):'none'};"`:''}
+    >${g}</button>`).join('');
+  pillsEl.querySelectorAll('.chart-genre-pill').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      activeChartGenre=btn.dataset.genre;
+      // update active styles
+      pillsEl.querySelectorAll('.chart-genre-pill').forEach(b=>{
+        const isActive=b.dataset.genre===activeChartGenre;
+        b.classList.toggle('active',isActive);
+        if(b.dataset.genre!=='ALL') b.style.background=isActive?gc(b.dataset.genre):'none';
+        b.style.color=isActive&&b.dataset.genre!=='ALL'?'#000':'';
+      });
+      // refilter without re-fetching
+      renderChartRows(tbChartCache?tbChartCache.map(r=>({videoId:r.video_id,title:r.title,
+        artist:r.artist,genre:r.genre,cnt:parseInt(r.total_plays)||0,
+        score:Math.round(parseFloat(r.ftp_score)||0),momentum:'—'})):[]);
+    });
+  });
+}
+
+function renderChartRows(allRanked){
+  const listEl=document.getElementById('chart-list');
+  let ranked=activeChartGenre==='ALL'
+    ? allRanked
+    : allRanked.filter(r=>r.genre===activeChartGenre);
+  ranked=ranked.slice(0,20);
+
+  if(!ranked.length){
+    listEl.innerHTML=`<div class="chart-loading">No tracks in this genre yet</div>`;
+    return;
+  }
+
   const rankClass=n=>n===0?'gold':n===1?'silver':n===2?'bronze':'';
   listEl.innerHTML=ranked.map((r,n)=>{
-    const momClass = r.momentum==='↑'?'up' : r.momentum==='↓'?'down' : r.momentum==='NEW'?'new' : 'same';
-    const momGlyph = r.momentum==='↑'?'▲' : r.momentum==='↓'?'▼' : r.momentum==='NEW'?'★' : '—';
+    const momClass=r.momentum==='↑'?'up':r.momentum==='↓'?'down':r.momentum==='NEW'?'new':'same';
+    const momGlyph=r.momentum==='↑'?'▲':r.momentum==='↓'?'▼':r.momentum==='NEW'?'★':'—';
     return`<div class="chart-row${r.videoId===TRACKS[currentIdx]?.id?' playing':''}" data-video-id="${r.videoId||''}">
       <div class="chart-rank ${rankClass(n)}">${n+1}</div>
       <img class="chart-thumb-sm" src="${ytThumb(r.videoId)}" loading="lazy" alt="" onerror="this.style.display='none'">
@@ -1553,41 +1513,7 @@ async function renderChart(){
   listEl.querySelectorAll('.chart-row').forEach(row=>{
     row.addEventListener('click',()=>{const idx=TRACKS.findIndex(t=>t.id===row.dataset.videoId);if(idx>=0)playTrack(idx);});
   });
-
-  let timeRows=[];
-  try{
-    if(usedTB){
-      const recent=await tbFetch('recent_plays');
-      timeRows=recent.slice(0,20).map(r=>{
-        // Tinybird ts can be "2026-03-20 12:34:56" or ISO format
-        let ts = r.ts || '';
-        const ms = Date.parse(ts.includes('T') ? ts : ts.replace(' ','T')+'Z');
-        return {id:r.video_id,title:r.title,artist:r.artist,genre:r.genre,playedAt:isNaN(ms)?Date.now():ms};
-      });
-    }
-  }catch(e){ console.warn('[timeline]',e.message); }
-  if(!timeRows.length) timeRows=playHistory.slice(0,20).map(h=>({id:h.id,title:h.title,artist:h.artist,genre:h.genre,playedAt:h.playedAt}));
-  histCount.textContent=timeRows.length?`${timeRows.length} plays`:'—';
-  timelineEl.innerHTML=timeRows.length
-    ?timeRows.map(h=>`<div class="timeline-entry" data-id="${h.id}">
-        <div class="timeline-time">${fmtTime(h.playedAt)}</div>
-        <img class="timeline-thumb" src="${ytThumb(h.id)}" loading="lazy" alt="" onerror="this.style.display='none'">
-        <div class="timeline-info"><div class="timeline-title">${esc(h.title)}</div><div class="timeline-artist">${esc(h.artist)}</div></div>
-        <span class="timeline-tag" style="background:${gc(h.genre)}">${h.genre}</span>
-      </div>`).join('')
-    :`<div class="chart-loading">No plays recorded yet — start listening</div>`;
-  timelineEl.querySelectorAll('.timeline-entry').forEach(e=>{
-    e.addEventListener('click',()=>{const idx=TRACKS.findIndex(t=>t.id===e.dataset.id);if(idx>=0)playTrack(idx);});
-  });
 }
-
-document.querySelectorAll('.chart-period-btn').forEach(b=>b.addEventListener('click',()=>{
-  chartPeriod=b.dataset.period;
-  document.querySelectorAll('.chart-period-btn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  tbChartCache=null;
-  renderChart();
-}));
 
 // ══════════════════════════════════════════════════════════════════
 //  MAIN RENDER
@@ -1810,6 +1736,23 @@ searchClear.addEventListener('click', () => {
 
 // Keyboard
 document.addEventListener('keydown',e=>{
+  // ESC always works regardless of focus — exits fullscreen or clears search
+  if(e.key === 'Escape') {
+    const panel = document.getElementById('vid-panel');
+    if(panel.classList.contains('fullscreen')) {
+      panel.classList.remove('fullscreen');
+      document.getElementById('vid-fullscreen-btn').textContent = '⛶';
+      document.getElementById('vid-fullscreen-btn').title = 'Fullscreen';
+      return;
+    }
+    // ESC also clears search if focused
+    const si = document.getElementById('search');
+    if(document.activeElement === si && si.value) {
+      si.value = ''; searchTerm = '';
+      document.getElementById('search-clear').classList.remove('visible');
+      render(); si.blur(); return;
+    }
+  }
   if(e.target.tagName==='INPUT') return;
   if(e.code==='Space'){e.preventDefault();document.getElementById('btn-play').click();}
   if(e.code==='ArrowRight') document.getElementById('btn-next').click();
