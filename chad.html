@@ -41,7 +41,7 @@
   --hero-h:     0px;
   --player-h:   62px;
   --vid-w:      320px;
-  --sidebar-w:  280px;
+  --sidebar-w:  188px;
   --ts: 1.3;
 }
 
@@ -362,23 +362,18 @@ body {
 @keyframes skel-pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
 
 /* ── SPONSORED TILE ──────────────────────────────────────────────── */
-.feat-tile.sponsored { cursor: pointer; text-decoration: none; display: block; }
+.feat-tile.sponsored { cursor: pointer; text-decoration: none; display: block; border-left: 3px solid #E8A000; }
 .feat-tile.sponsored .tile-thumb::before {
   content: ''; position: absolute; inset: 0; z-index: 3;
-  background: linear-gradient(135deg, rgba(204,0,0,0.08) 0%, transparent 60%);
+  background: linear-gradient(135deg, rgba(232,160,0,0.12) 0%, transparent 60%);
   pointer-events: none;
 }
 .sponsored-label {
   position: absolute; top: 5px; right: 5px; z-index: 5;
   font-family: var(--font-cond); font-weight: 700; font-size: 0.42rem;
   letter-spacing: 0.22em; text-transform: uppercase;
-  padding: 2px 6px; color: rgba(255,255,255,0.75);
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(255,255,255,0.18);
-}
-.feat-head.sponsored-head {
-  background: var(--surface-2); color: var(--text-dim);
-  border-left: 3px solid var(--red);
+  padding: 2px 6px; color: #000;
+  background: #E8A000;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -797,6 +792,8 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
     border-right: none; border-bottom: 1px solid var(--border);
     overflow-y: visible; flex-direction: row;
     display: flex; flex-wrap: nowrap; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
     scrollbar-width: none;
   }
   #sidebar::-webkit-scrollbar { display: none; }
@@ -806,15 +803,17 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
     border-left: none; border-top: 1px solid var(--border);
     overflow-y: visible; flex-direction: row;
     display: flex; flex-wrap: nowrap; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
     scrollbar-width: none;
     order: 3;
   }
   #sidebar-right::-webkit-scrollbar { display: none; }
-  #centre { order: 2; }
-  #sidebar { order: 1; }
-  .feat-head { writing-mode: vertical-rl; text-orientation: mixed; padding: 8px 4px; flex-shrink: 0; min-width: 24px; }
+  #sidebar  { order: 1; }
+  #centre   { order: 2; flex: 1; min-height: 0; overflow: hidden; }
+  #sidebar .feat-head { writing-mode: vertical-rl; text-orientation: mixed; padding: 8px 4px; flex-shrink: 0; min-width: 24px; }
+  #sidebar-right .feat-head { display: none; }
   .feat-tile { min-width: 52vw; flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border); }
-  #centre { flex: 1; min-height: 0; overflow: hidden; }
   .mast-link { display: none; }
   .gui-sep { display: none; }
 
@@ -831,10 +830,6 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   .view-tabs::-webkit-scrollbar { display: none; }
   .view-tab { padding: 8px 14px; font-size: 1.5rem; flex-shrink: 0; }
 
-  #tile-grid { grid-template-columns: repeat(2, 1fr); }
-  .list-header, .list-row { grid-template-columns: 26px 1fr 52px; }
-  .list-header > *:nth-child(4), .list-header > *:nth-child(5),
-  .list-row > *:nth-child(4), .list-row > *:nth-child(5) { display: none; }
   .chart-top { grid-template-columns: 1fr; }
   .progress-wrap { width: 100px; }
   .prog-time { display: none; }
@@ -852,8 +847,8 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   #vid-panel #yt-inner { top: -42px; bottom: -42px; left: -2px; right: -2px; }
   #vid-resize-handle { display: none; }
   .feat-skeleton { min-width: 52vw; }
-  #sidebar-right .feat-tile { min-width: 52vw; flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border); }
-  #sidebar-right .feat-head { writing-mode: vertical-rl; text-orientation: mixed; padding: 8px 4px; flex-shrink: 0; min-width: 24px; }
+  #sidebar-right .feat-tile { min-width: 52vw; flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border); scroll-snap-align: start; }
+  #sidebar-right .feat-head { display: none; }
 }
 </style>
 </head>
@@ -1391,15 +1386,11 @@ function injectSponsoredTile() {
     const sb = document.getElementById('sidebar');
     if (!sb) return;
 
-    // Build the wrapper: label + tile
+    // Insert sponsored tile after the first feat-tile (after #1)
     const wrapper = document.createElement('div');
-    wrapper.innerHTML =
-      `<div class="feat-head sponsored-head">Sponsored</div>` +
-      sponsoredTileHTML(campaign);
+    wrapper.innerHTML = sponsoredTileHTML(campaign);
 
-    // Insert at position 2 — after the first feat-head + feat-tile pair
-    // Find the second .feat-head child (the "Last Week's" label)
-    const heads = sb.querySelectorAll('.feat-head:not(.sponsored-head)');
+    const heads = sb.querySelectorAll('.feat-head');
     const insertBefore = heads.length >= 2 ? heads[1] : null;
 
     if (insertBefore) {
@@ -1408,11 +1399,9 @@ function injectSponsoredTile() {
       sb.appendChild(wrapper);
     }
 
-    // Wire click tracking
     const tile = wrapper.querySelector('.sponsored');
     if (tile) {
       tile.addEventListener('click', () => trackSidebarClick(campaign.id));
-      // Impression fires on insert
       trackSidebarImpression(campaign.id);
     }
   } catch(e) {
@@ -1433,60 +1422,70 @@ async function buildRightSidebar() {
   sb.innerHTML = `
     <div class="feat-head">Hot 24hrs</div>
     <div class="feat-skeleton" id="rsb-hot24">Loading…</div>
-    <div class="feat-head sponsored-head">Sponsored</div>
     <div class="feat-skeleton" id="rsb-sponsor">—</div>
   `;
 
-  // ── Most viewed last 24 hours ─────────────────────────────────
+  // ── Most viewed last 24 hours (from Tinybird) ─────────────────
   try {
-    const sql = `SELECT video_id,title,artist,genre,count() as plays_24h FROM ftp_plays WHERE event_type='play' AND ts>=now()-INTERVAL 1 DAY GROUP BY video_id,title,artist,genre ORDER BY plays_24h DESC LIMIT 1`;
-    const res  = await fetch(`${TB_HOST}/v0/sql?q=${encodeURIComponent(sql)}&token=${TB_READ_TOK}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data  = await res.json();
-    const top24 = data?.data?.[0];
-    const el    = document.getElementById('rsb-hot24');
+    const rows = await tbFetch('chart_scores');
+    if (rows && rows.length) {
+      // plays_7d is the closest we have — filter to 24h via a separate query
+      // Use a raw SQL query against the pipe for 24h window
+      const sql = `SELECT video_id,title,artist,genre,count() as plays_24h FROM ftp_plays WHERE event_type='play' AND ts>=now()-interval 1 day GROUP BY video_id,title,artist,genre ORDER BY plays_24h DESC LIMIT 1 FORMAT JSON`;
+      const res = await fetch(`${TB_HOST}/v0/sql?q=${encodeURIComponent(sql)}&token=${TB_READ_TOK}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      const top24 = data?.data?.[0];
 
-    if (el && top24) {
-      const idx   = TRACKS.findIndex(t => t.id === top24.video_id);
-      const track = idx >= 0
-        ? { ...TRACKS[idx], _idx: idx }
-        : { id: top24.video_id, title: top24.title, artist: top24.artist,
-            genre: top24.genre || 'UNC', song: top24.title, _idx: -1 };
-      const col = gc(track.genre);
-      el.outerHTML = `
-        <div class="feat-tile" data-idx="${track._idx}" data-video-id="${track.id}">
-          <div class="tile-thumb">
-            <img class="tile-thumb-img"
-                 src="https://i.ytimg.com/vi/${track.id}/mqdefault.jpg"
-                 onerror="this.style.display='none'" alt="">
-            <span class="tile-genre" style="background:${col}">${track.genre}</span>
-            <div class="tile-np">
-              <div style="display:block;font-size:0.45rem;color:var(--yellow);
-                letter-spacing:0.2em;font-family:var(--font-cond);font-weight:700;
-                text-transform:uppercase;margin-bottom:1px">
-                ${top24.plays_24h} play${top24.plays_24h!=1?'s':''} today
+      const el = document.getElementById('rsb-hot24');
+      if (el) {
+        if (top24) {
+          const idx = TRACKS.findIndex(t => t.id === top24.video_id);
+          const track = idx >= 0
+            ? { ...TRACKS[idx], _idx: idx }
+            : { id: top24.video_id, title: top24.title, artist: top24.artist,
+                genre: top24.genre || 'UNC', song: top24.title, _idx: -1 };
+          const col = gc(track.genre);
+          el.outerHTML = `
+            <div class="feat-tile" data-idx="${track._idx}" data-video-id="${track.id}">
+              <div class="tile-thumb">
+                <img class="tile-thumb-img"
+                     src="https://i.ytimg.com/vi/${track.id}/mqdefault.jpg"
+                     onerror="this.style.display='none'" alt="">
+                <span class="tile-genre" style="background:${col}">${track.genre}</span>
+                <div class="tile-np">
+                  <div class="tile-np-plays" style="display:block;font-size:0.45rem;
+                    color:var(--yellow);letter-spacing:0.2em;font-family:var(--font-cond);
+                    font-weight:700;text-transform:uppercase;margin-bottom:1px">
+                    ${top24.plays_24h} plays today
+                  </div>
+                  <div class="tile-np-title">${esc(track.song || track.title)}</div>
+                </div>
               </div>
-              <div class="tile-np-title">${esc(track.song || track.title)}</div>
-            </div>
-          </div>
-          <div class="tile-meta">
-            <div class="tile-artist">${esc(track.artist)}</div>
-            <div class="tile-song">${esc(track.song || track.title)}</div>
-          </div>
-        </div>`;
-      sb.querySelector(`[data-video-id="${track.id}"]`)
-        ?.addEventListener('click', () => {
-          const fi = track._idx >= 0 ? track._idx : TRACKS.findIndex(t => t.id === track.id);
-          if (fi >= 0) playTrack(fi);
-        });
-    } else if (el) {
-      el.innerHTML = '<div style="padding:10px 8px;font-size:0.6rem;color:var(--text-lo);letter-spacing:0.14em;text-transform:uppercase">No plays yet today</div>';
-      el.className = '';
+              <div class="tile-meta">
+                <div class="tile-artist">${esc(track.artist)}</div>
+                <div class="tile-song">${esc(track.song || track.title)}</div>
+              </div>
+            </div>`;
+          // Wire click
+          const tile = sb.querySelector('[data-video-id="' + track.id + '"]');
+          if (tile) tile.addEventListener('click', () => {
+            if (track._idx >= 0) playTrack(track._idx);
+            else {
+              const fi = TRACKS.findIndex(t => t.id === track.id);
+              if (fi >= 0) playTrack(fi);
+            }
+          });
+        } else {
+          el.innerHTML = '<div style="padding:10px 8px;font-size:0.6rem;color:var(--text-lo);letter-spacing:0.14em;text-transform:uppercase">No plays yet today</div>';
+          el.className = '';
+        }
+      }
     }
   } catch(e) {
     console.warn('[rsb hot24]', e.message);
     const el = document.getElementById('rsb-hot24');
-    if (el) { el.innerHTML = '<div style="padding:10px 8px;font-size:0.6rem;color:var(--text-lo)">Unavailable</div>'; el.className=''; }
+    if (el) { el.textContent = '—'; el.className = ''; }
   }
 
   // ── Sponsored tile ────────────────────────────────────────────
@@ -1506,8 +1505,6 @@ async function buildRightSidebar() {
       }
     } else if (el) {
       el.remove();
-      const head = sb.querySelector('.sponsored-head');
-      if (head) head.remove();
     }
   } catch(e) {
     console.warn('[rsb sponsor]', e);
