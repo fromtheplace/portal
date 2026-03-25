@@ -1219,10 +1219,13 @@ async function fetchRecentOrder() {
       const seen = new Set();
       const indices = [];
       for (const r of rows) {
-        if (!seen.has(r.video_id)) {
-          seen.add(r.video_id);
-          const idx = TRACKS.findIndex(t => t.id === r.video_id);
-          if (idx >= 0) indices.push(idx);
+        // compound key — same video_id with different titles are distinct chapters
+        const key = r.video_id + '::' + r.title;
+        if (!seen.has(key)) {
+          seen.add(key);
+          const idx = TRACKS.findIndex(t => t.id === r.video_id && t.title === r.title);
+          const idxFb = idx >= 0 ? idx : TRACKS.findIndex(t => t.id === r.video_id);
+          if (idxFb >= 0) indices.push(idxFb);
         }
       }
       tbRecentOrder = indices;
