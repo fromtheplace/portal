@@ -1086,7 +1086,7 @@ function castVote(videoId, title, artist, genre) {
       event_type: 'vote',
       video_id: videoId, title, artist, genre, source: 'catalogue'
     });
-    fetch(`https://api.europe-west2.gcp.tinybird.co/v0/events?name=ftp_plays&token=${TB_READ_TOK}`,
+    fetch(`https://api.europe-west2.gcp.tinybird.co/v0/events?name=vw_catalogue_data&token=${TB_READ_TOK}`,
       { method:'POST', body, headers:{'Content-Type':'application/json'}, keepalive:true }
     ).catch(()=>{});
   }
