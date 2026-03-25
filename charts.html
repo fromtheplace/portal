@@ -1138,11 +1138,13 @@ loadSession();
 // ══════════════════════════════════════════════════════════════════
 let votedIds = new Set(JSON.parse(localStorage.getItem('vw_votes') || '[]'));
 
-function hasVoted(videoId) { return votedIds.has(videoId); }
+// compound key — prevents shared-video chapters cross-pollinating hearts
+function voteKey(videoId, title) { return videoId + '::' + title; }
+function hasVoted(videoId, title) { return votedIds.has(voteKey(videoId, title)); }
 
 function castVote(videoId, title, artist, genre) {
-  if (hasVoted(videoId)) return false; // one vote per track per browser
-  votedIds.add(videoId);
+  if (hasVoted(videoId, title)) return false; // one vote per track per browser
+  votedIds.add(voteKey(videoId, title));
   localStorage.setItem('vw_votes', JSON.stringify([...votedIds]));
   // Send vote event to Tinybird
   if (typeof FTP_ANALYTICS !== 'undefined') {
@@ -1668,7 +1670,7 @@ function renderTiles(items){
         <div class="tile-thumb-fb" style="display:none">${t.genre}</div>
         <span class="tile-genre" style="background:${gc(t.genre)}">${t.genre}</span>
         <span class="tile-playing-badge">▶ ON AIR</span>
-        <button class="tile-vote${hasVoted(t.id)?' voted':''}" data-idx="${i}" title="Vote"></button>
+        <button class="tile-vote${hasVoted(t.id, t.title)?' voted':''}" data-idx="${i}" title="Vote"></button>
         <div class="tile-np">
           ${pc?`<div class="tile-np-plays">${pc}× played</div>`:''}
           <div class="tile-np-title">${esc(t.song||t.title)}</div>
@@ -1856,7 +1858,7 @@ function playTrack(idx){
   // Player vote button state
   const pvBtn = document.getElementById('player-vote');
   const pvCount = document.getElementById('player-vote-count');
-  pvBtn.classList.toggle('voted', hasVoted(t.id));
+  pvBtn.classList.toggle('voted', hasVoted(t.id, t.title));
   pvCount.textContent = '';
   pvBtn.onclick = () => {
     if (castVote(t.id, t.title, t.artist, t.genre)) {
