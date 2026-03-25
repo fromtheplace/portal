@@ -40,7 +40,7 @@
   --masthead-h: 78px;
   --hero-h:     0px;
   --player-h:   62px;
-  --vid-w:      320px;
+  --vid-w:      50vw;
   --sidebar-w:  188px;
   --ts: 1.3;
 
@@ -73,7 +73,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { height: 100%; font-size: calc(13px * var(--ts)); }
 body {
-  height: 100%; background: var(--bg); color: var(--text);
+  height: 100%; background: var(--ledger-inv); color: var(--text);
   font-family: var(--font-mono); font-size: 1rem;
   line-height: 1.5; overflow: hidden;
   transition: background 0.25s, color 0.25s;
@@ -372,6 +372,10 @@ body.fullscreen-active #vid-exit-fs-btn { display: flex; }
   overflow-y: auto; display: flex; flex-direction: column;
 }
 /* section subhead — red block label same as MTV editorial */
+.rise-head {
+    color: #000!important;
+    background: var(--yellow)!important;
+    }
 .feat-head {
   font-family: var(--font-cond); font-weight: 700; font-size: 0.5rem;
   letter-spacing: 0.32em; color: #fff; text-transform: uppercase;
@@ -610,11 +614,15 @@ body.fullscreen-active #vid-exit-fs-btn { display: flex; }
   padding: 3px 7px; transition: all 0.12s; text-transform: uppercase; text-align: center; display: block;
 }
 .list-yt-link:hover { color: var(--red); border-color: var(--red); }
-
+#list-view {border:1px solid var(--border);}
 /* ══════════════════════════════════════════════════════════════════
    CHART VIEW
 ══════════════════════════════════════════════════════════════════ */
-.chart-wrap { padding: 0 14px 14px; }
+
+
+.chart-wrap
+{padding: 0 0 14px;}
+ .chart-wrap, #list-view {max-width:60vw;}
 .chart-header {
   display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
   padding: 8px 0 10px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
@@ -835,22 +843,57 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
 ══════════════════════════════════════════════════════════════════ */
 @media (max-width: 600px) {
   :root { --player-h: 56px; }
-  /* on mobile the app stacks vertically — sidebar on top, content below */
-  #app { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+
+  /* app is a vertical scroll container — sidebar scrolls away, content stays */
+  #app {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* allow natural document flow so sidebar scrolls out of view */
+    align-items: stretch;
+  }
+
+  /* sidebar sits at top, scrolls away with page — NOT sticky */
   #sidebar {
-    width: 100% !important; flex-shrink: 0;
-    border-right: none; border-bottom: 1px solid var(--border);
-    overflow-y: visible; flex-direction: row;
-    display: flex; flex-wrap: nowrap; overflow-x: auto;
+    width: 100% !important;
+    flex-shrink: 0;
+    position: static !important; /* never sticky on mobile */
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow-y: visible;
+    flex-direction: row;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
+    order: 1;
   }
   #sidebar::-webkit-scrollbar { display: none; }
-  /* right sidebar snaps to bottom on mobile — order pushes it after content */
-  #sidebar  { order: 1; }
-  #centre   { order: 2; flex: 1; min-height: 0; overflow: hidden; }
-  #sidebar .feat-head { writing-mode: vertical-rl; text-orientation: mixed; padding: 8px 4px; flex-shrink: 0; min-width: 24px; }  .feat-tile { min-width: 52vw; flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border); }
+
+  /* centre takes remaining space, does NOT scroll independently */
+  #centre {
+    order: 2;
+    flex: 1;
+    min-height: 0;
+    overflow: visible; /* let #app handle scrolling */
+  }
+
+  #sidebar .feat-head {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    padding: 8px 4px;
+    flex-shrink: 0;
+    min-width: 24px;
+  }
+  .feat-tile {
+    min-width: 52vw;
+    flex-shrink: 0;
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+  }
+
   .mast-link { display: none; }
   .gui-sep { display: none; }
 
@@ -858,19 +901,38 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   .mast-center { padding: 0 8px; }
   .mast-search { max-width: none; flex: 1; }
 
-  /* view-tabs — horizontal scroll so chart sub-nav doesn't get lost */
+  /* view-tabs — sticky below masthead, tabs scroll horizontally */
   .view-tabs {
     overflow-x: auto; overflow-y: visible;
     flex-wrap: nowrap; -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
   .view-tabs::-webkit-scrollbar { display: none; }
   .view-tab { padding: 8px 14px; font-size: 1.5rem; flex-shrink: 0; }
+
+  /* genre chips sticky just below tabs */
+  #genre-chips {
+    position: sticky;
+    top: 51px;
+    z-index: 9;
+  }
+
+  /* #content must NOT be an independent scroll container on mobile —
+     #app handles all scrolling so sidebar can flow and scroll away */
+  #content {
+    overflow: visible;
+    min-height: 0;
+    flex: none;
+  }
 
   .chart-top { grid-template-columns: 1fr; }
   .progress-wrap { width: 100px; }
   .prog-time { display: none; }
   .vol-wrap { display: none; }
+
   /* video above player on mobile */
   #vid-panel {
     position: fixed; bottom: var(--player-h); left: 0; right: 0;
@@ -883,7 +945,8 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   #vid-info { display: none; }
   #vid-panel #yt-inner { top: -42px; bottom: -42px; left: -2px; right: -2px; }
   #vid-resize-handle { display: none; }
-  .feat-skeleton { min-width: 52vw; }}
+  .feat-skeleton { min-width: 52vw; }
+}
 </style>
 </head>
 <body>
@@ -1524,7 +1587,7 @@ async function buildFeaturedColumn() {
   sb.innerHTML = `
     <div class="feat-head">#1</div>
     <div class="feat-skeleton" id="feat-number1">Loading...</div>
-    <div class="feat-head">Rising</div>
+    <div class="feat-head rise-head">Rising</div>
     <div class="feat-skeleton" id="feat-rising">Loading...</div>
   `;
 
