@@ -255,11 +255,11 @@ body.fullscreen-active #vid-exit-fs-btn { display: flex; }
 ══════════════════════════════════════════════════════════════════ */
 /* VIDEO WON logo — SVG inline, inverted to white */
 #logo-cell {
-  display: flex; align-items: center; padding: 0 16px;
+  display: flex; align-items: center; margin-top:-10px; padding: 0 16px;
   border-right: 1px solid #333;
   flex-shrink: 0; cursor: default;
 }
-#logo-cell svg { height: 50px; width: auto; }
+#logo-cell svg { height: 55px; width: auto; }
 
 /* LCD clock — now inside mast-right — always small regardless of text scale */
 #clock-cell {
@@ -894,44 +894,49 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
 <header id="masthead">
   <!-- VIDEO WON logo: Arial Black blocks top, Arial thin italic bottom, theme-inverts -->
   <div id="logo-cell">
-    <svg id="vw-logo" viewBox="0 0 175 75" xmlns="http://www.w3.org/2000/svg" aria-label="VIDEO WON" style="height:50px;width:auto;display:block">
+  <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="auto" viewBox="0 0 1500 700">
       <defs>
         <style>
-          /* dark mode: white boxes, black letters */
-          .vw-box    { fill: #ffffff; }
-          .vw-letter { fill: #111111; }
-          /* light mode: black boxes, white letters */
-          [data-theme="light"] .vw-box    { fill: #111111; }
-          [data-theme="light"] .vw-letter { fill: #ffffff; }
-        </style>
+		.vw-letter { fill: #ffffff; } [data-theme="light"] .vw-letter { fill: #000000; } 
+		
+}        </style>
       </defs>
+  
 
-      <!-- V -->
-      <rect class="vw-box" x="0"   y="0" width="36" height="37" rx="1"/>
-      <text class="vw-letter" x="15"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">V</text>
-      <!-- I -->
-      <rect class="vw-box" x="38"  y="0" width="22" height="37" rx="1"/>
-      <text class="vw-letter" x="46"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">I</text>
-      <!-- D -->
-      <rect class="vw-box" x="62"  y="0" width="38" height="37" rx="1"/>
-      <text class="vw-letter" x="79"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">D</text>
-      <!-- E -->
-      <rect class="vw-box" x="102" y="0" width="33" height="37" rx="1"/>
-      <text class="vw-letter" x="115" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">E</text>
-      <!-- O — right edge = 137+38 = 175 -->
-      <rect class="vw-box" x="137" y="0" width="38" height="37" rx="1"/>
-      <text class="vw-letter" x="153" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">O</text>
 
-      <!-- ШОN right-aligned to x=175 — Arial weight 100 italic, red -->
-      <text x="175" y="74"
-        font-family="Arial,Helvetica,sans-serif"
-        font-weight="100"
-        font-style="italic"
-        font-size="43"
-        fill="#CC0000"
-        text-anchor="end"
-        letter-spacing="4">ШОN</text>
-    </svg>
+  
+  <!-- LOGO -->
+  <g transform="translate(700, 220) scale(8.1)">
+
+    <!-- RED BOXES -->
+    <rect x="-85" y="0" width="38" height="32" rx="4" fill="#cc0000"/>
+    <text x="-68" y="18" font-family="Arial Black, Arial" font-size="24" font-weight="900" font-style="italic" text-anchor="middle" dominant-baseline="middle" fill="#ffffff">F</text>
+
+    <rect x="-43" y="0" width="38" height="32" rx="4" fill="#cc0000"/>
+    <text x="-26" y="18" font-family="Arial Black, Arial" font-size="24" font-weight="900" font-style="italic" text-anchor="middle" dominant-baseline="middle" fill="#ffffff">R</text>
+
+    <rect x="-1" y="0" width="38" height="32" rx="4" fill="#cc0000"/>
+    <text x="16" y="18" font-family="Arial Black, Arial" font-size="24" font-weight="900" font-style="italic" text-anchor="middle" dominant-baseline="middle" fill="#ffffff">O</text>
+
+    <rect x="41" y="0" width="38" height="32" rx="4" fill="#cc0000"/>
+    <text x="58" y="18" font-family="Arial Black, Arial" font-size="24" font-weight="900" font-style="italic" text-anchor="middle" dominant-baseline="middle" fill="#ffffff">M</text>
+
+  <g>
+
+
+
+
+ 
+
+  <!-- Main text (locked in place) -->
+  <text class="vw-letter" x="40" y="58" font-family="'Bebas Neue'" font-size="28" font-weight="100" font-style="italic" fill="#000000" text-anchor="middle" letter-spacing="0">
+    THE PLAYS
+  </text>
+
+  </g>
+</g>
+
+</svg>
   </div>
 
   <div class="mast-center">
@@ -1166,16 +1171,13 @@ async function tbFetch(pipe){
 let tbCatalogueCache = null;
 let tbCatalogueCacheTime = 0;
 
-async function fetchCatalogueData() {
+async function fetchCatalogueData(bust) {
   const now = Date.now();
-  if (tbCatalogueCache && now - tbCatalogueCacheTime < 600_000) return tbCatalogueCache;
-  const res = await fetch(`${TB_HOST}/v0/pipes/vw_catalogue_data.json?token=${TB_READ_TOK}`);
+  if (!bust && tbCatalogueCache && now - tbCatalogueCacheTime < 60_000) return tbCatalogueCache;
+  const url = `${TB_HOST}/v0/pipes/vw_catalogue_data.json?token=${TB_READ_TOK}&_=${now}`;
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const json = await res.json();
-  // The pipe returns rows with a `section` discriminator field:
-  // section='chart'  → chart scoring rows
-  // section='recent' → recent play rows
-  // section='rising' → single 24h hot row
   const rows = json.data || [];
   tbCatalogueCache = {
     chart:  rows.filter(r => r.section === 'chart'),
@@ -1521,24 +1523,31 @@ async function buildFeaturedColumn() {
 
   sb.innerHTML = `
     <div class="feat-head">#1</div>
-    <div class="feat-skeleton" id="feat-number1">Loading…</div>
+    <div class="feat-skeleton" id="feat-number1">Loading...</div>
     <div class="feat-head">Rising</div>
-    <div class="feat-skeleton" id="feat-rising">Loading…</div>
+    <div class="feat-skeleton" id="feat-rising">Loading...</div>
   `;
 
   try {
-    // Single fetch — all data comes from vw_catalogue_data
-    const data = await fetchCatalogueData();
+    // bust=true forces a fresh fetch — pipe is already sorted by ftp_score DESC
+    const data = await fetchCatalogueData(true);
     const rows = data.chart;
     const top24 = data.rising;
 
     if (rows && rows.length) {
-      // #1 — all-time top by ftp_score
-      const allTimeTop = [...rows].sort((a,b) => parseFloat(b.ftp_score||0)-parseFloat(a.ftp_score||0))[0];
-      const allTimeIdx = allTimeTop ? TRACKS.findIndex(t => t.id === allTimeTop.video_id) : -1;
-      const allTimeTrack = allTimeIdx >= 0 ? {...TRACKS[allTimeIdx], _idx: allTimeIdx} : null;
+      // #1 — pipe returns rows sorted ftp_score DESC so rows[0] is correct
+      const allTimeTop = rows[0];
+      // Match on both video_id AND title — same video_id can be multiple chapters
+      const allTimeIdx = allTimeTop
+        ? TRACKS.findIndex(t => t.id === allTimeTop.video_id && t.title === allTimeTop.title)
+        : -1;
+      // fallback to video_id only if title match fails
+      const allTimeIdxFb = allTimeIdx >= 0 ? allTimeIdx
+        : TRACKS.findIndex(t => t.id === allTimeTop.video_id);
+      const resolvedIdx = allTimeIdx >= 0 ? allTimeIdx : allTimeIdxFb;
+      const allTimeTrack = resolvedIdx >= 0 ? {...TRACKS[resolvedIdx], _idx: resolvedIdx} : null;
       const n1El = document.getElementById('feat-number1');
-      if (n1El) n1El.outerHTML = featTileHTML(allTimeTrack, allTimeIdx === currentIdx);
+      if (n1El) n1El.outerHTML = featTileHTML(allTimeTrack, resolvedIdx === currentIdx);
     } else {
       const el = document.getElementById('feat-number1');
       if (el) { el.innerHTML = '<div style="padding:10px 8px;font-size:0.6rem;color:var(--text-lo);letter-spacing:0.14em;text-transform:uppercase">No data yet</div>'; el.className=''; }
@@ -1548,7 +1557,9 @@ async function buildFeaturedColumn() {
     const risingEl = document.getElementById('feat-rising');
     if (risingEl) {
       if (top24) {
-        const idx   = TRACKS.findIndex(t => t.id === top24.video_id);
+        // Match on video_id + title to correctly resolve shared-video chapters
+        let idx = TRACKS.findIndex(t => t.id === top24.video_id && t.title === top24.title);
+        if (idx < 0) idx = TRACKS.findIndex(t => t.id === top24.video_id);
         const track = idx >= 0 ? {...TRACKS[idx], _idx: idx}
           : {id:top24.video_id, title:top24.title, artist:top24.artist,
              genre:top24.genre||'UNC', song:top24.title, _idx:-1};
@@ -1710,12 +1721,12 @@ function renderList(items){
 async function renderChart(){
   const listEl=document.getElementById('chart-list');
 
-  listEl.innerHTML='<div class="chart-loading">Loading chart…</div>';
+  listEl.innerHTML='<div class="chart-loading">Loading chart...</div>';
 
   let usedTB=false, allRanked=[];
   try {
     const data = await fetchCatalogueData();
-    const rows = data.chart;
+    const rows = data.chart; // already sorted ftp_score DESC by pipe
     if(rows?.length){
       usedTB=true;
 
@@ -1723,22 +1734,24 @@ async function renderChart(){
       try{ prevRanks=JSON.parse(localStorage.getItem('vw_prev_ranks')||'{}'); }catch(e){}
       const isFirstLoad=Object.keys(prevRanks).length===0;
 
-      const sorted=[...rows].sort((a,b)=>parseFloat(b.ftp_score||0)-parseFloat(a.ftp_score||0)).slice(0,40);
+      const ranked=rows.slice(0,40);
 
-      allRanked=sorted.map((r,n)=>{
+      allRanked=ranked.map((r,n)=>{
         const curRank=n+1, prevRank=prevRanks[r.video_id];
-        let momentum='—';
-        if(isFirstLoad) momentum='NEW';
-        else if(prevRank===undefined) momentum='↑';
-        else if(curRank<prevRank) momentum='↑';
-        else if(curRank>prevRank) momentum='↓';
+        let momentum='NEW';
+        if(!isFirstLoad){
+          if(prevRank===undefined) momentum='↑';
+          else if(curRank<prevRank) momentum='↑';
+          else if(curRank>prevRank) momentum='↓';
+          else momentum='—';
+        }
         return{videoId:r.video_id,title:r.title,artist:r.artist,genre:r.genre,
                cnt:parseInt(r.total_plays)||0,score:Math.round(parseFloat(r.ftp_score)||0),momentum};
       });
 
-      // Save snapshot
+      // Save snapshot for next load's movement arrows
       const snap={};
-      sorted.forEach((r,n)=>{snap[r.video_id]=n+1;});
+      ranked.forEach((r,n)=>{snap[r.video_id]=n+1;});
       try{localStorage.setItem('vw_prev_ranks',JSON.stringify(snap));}catch(e){}
     }
   } catch(e){ console.warn('[vw] Tinybird:',e.message); }
@@ -1764,7 +1777,7 @@ function renderChartRows(allRanked){
   listEl.innerHTML=ranked.map((r,n)=>{
     const momClass=r.momentum==='↑'?'up':r.momentum==='↓'?'down':r.momentum==='NEW'?'new':'same';
     const momGlyph=r.momentum==='↑'?'▲':r.momentum==='↓'?'▼':r.momentum==='NEW'?'★':'—';
-    return`<div class="chart-row${r.videoId===TRACKS[currentIdx]?.id?' playing':''}" data-video-id="${r.videoId||''}">
+    return`<div class="chart-row${r.videoId===TRACKS[currentIdx]?.id?' playing':''}" data-video-id="${r.videoId||''}" data-title="${esc(r.title)}">
       <div class="chart-rank ${rankClass(n)}">${n+1}</div>
       <img class="chart-thumb-sm" src="${ytThumb(r.videoId)}" loading="lazy" alt="" onerror="this.style.display='none'">
       <div class="chart-info">
@@ -1775,7 +1788,14 @@ function renderChartRows(allRanked){
     </div>`;
   }).join('');
   listEl.querySelectorAll('.chart-row').forEach(row=>{
-    row.addEventListener('click',()=>{const idx=TRACKS.findIndex(t=>t.id===row.dataset.videoId);if(idx>=0)playTrack(idx);});
+    row.addEventListener('click',()=>{
+      const vid = row.dataset.videoId;
+      const title = row.dataset.title;
+      // match on both video_id + title to handle shared-video chapters
+      let idx = TRACKS.findIndex(t => t.id === vid && t.title === title);
+      if (idx < 0) idx = TRACKS.findIndex(t => t.id === vid);
+      if (idx >= 0) playTrack(idx);
+    });
   });
 }
 
@@ -2057,6 +2077,8 @@ setInterval(tick,1000); tick();
 
 buildFeaturedColumn().then(() => injectSponsoredTile());
 fetchRecentOrder(); // load universal recent plays order for default tile sort
+// Clear stale rank snapshot so chart movement arrows are always fresh
+try { localStorage.removeItem('vw_prev_ranks'); } catch(e) {}
 document.getElementById('tile-view').style.display ='block';
 document.getElementById('list-view').style.display ='none';
 document.getElementById('chart-view').style.display='none';
