@@ -1170,10 +1170,11 @@ async function tbFetch(pipe){
 
 // ══════════════════════════════════════════════════════════════════
 //  SINGLE TINYBIRD ENDPOINT — vw_catalogue_data
-//  One scan of ftp_plays returns everything via conditional aggregation.
-//  All rows are chart rows sorted by ftp_score DESC.
-//  Client derives recent order (sort by last_played) and rising
-//  (row with highest plays_24h) from the same payload — zero extra queries.
+//  Returns one JSON response containing three keyed sections:
+//    data.chart   → ranked chart rows (replaces chart_scores)
+//    data.recent  → recent play order (replaces recent_plays)
+//    data.rising  → top track in last 24h (replaces inline SQL)
+//  Cache for 10 minutes to minimise daily query usage.
 // ══════════════════════════════════════════════════════════════════
 let tbCatalogueCache = null;
 let tbCatalogueCacheTime = 0;
@@ -1186,22 +1187,20 @@ async function fetchCatalogueData(bust) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const rows = (await res.json()).data || [];
 
-  // chart — already sorted ftp_score DESC by pipe
+  // pipe returns flat rows sorted ftp_score DESC — derive all three views client-side
   const chart = rows;
 
-  // recent — same rows re-sorted by last_played DESC
   const recent = [...rows].sort((a, b) => {
     const ta = a.last_played || '';
     const tb2 = b.last_played || '';
     return ta < tb2 ? 1 : ta > tb2 ? -1 : 0;
   });
 
-  // rising — row with most plays in last 24h (min 1 play today)
   const rising = rows
     .filter(r => (parseInt(r.plays_24h) || 0) > 0)
-    .reduce((best, r) => {
-      return (!best || parseInt(r.plays_24h) > parseInt(best.plays_24h)) ? r : best;
-    }, null);
+    .reduce((best, r) =>
+      (!best || parseInt(r.plays_24h) > parseInt(best.plays_24h)) ? r : best
+    , null);
 
   tbCatalogueCache = { chart, recent, rising };
   tbCatalogueCacheTime = now;
