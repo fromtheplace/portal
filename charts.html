@@ -622,8 +622,9 @@ body.fullscreen-active #vid-exit-fs-btn { display: flex; }
 
 .chart-wrap
 {padding: 0 0 14px;}
+
  .chart-wrap, #list-view {max-width:60vw;}
-.chart-header {
+ .chart-header {
   display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
   padding: 8px 0 10px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
 }
@@ -843,42 +844,94 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
 ══════════════════════════════════════════════════════════════════ */
 @media (max-width: 600px) {
   :root { --player-h: 56px; }
-  /* on mobile the app stacks vertically — sidebar on top, content below */
-  #app { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+
+  /* app is a vertical scroll container — sidebar scrolls away, content stays */
+  #app {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-items: stretch;
+  }
+
+  /* sidebar sits at top, scrolls away with page — NOT sticky */
   #sidebar {
-    width: 100% !important; flex-shrink: 0;
-    border-right: none; border-bottom: 1px solid var(--border);
-    overflow-y: visible; flex-direction: row;
-    display: flex; flex-wrap: nowrap; overflow-x: auto;
+    width: 100% !important;
+    flex-shrink: 0;
+    position: static !important;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow-y: visible;
+    flex-direction: row;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
+    order: 1;
   }
   #sidebar::-webkit-scrollbar { display: none; }
-  /* right sidebar snaps to bottom on mobile — order pushes it after content */
-  #sidebar  { order: 1; }
-  #centre   { order: 2; flex: 1; min-height: 0; overflow: hidden; }
-  #sidebar .feat-head { writing-mode: vertical-rl; text-orientation: mixed; padding: 8px 4px; flex-shrink: 0; min-width: 24px; }  .feat-tile { min-width: 52vw; flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border); }
+
+  /* centre takes remaining space, does NOT scroll independently */
+  #centre {
+    order: 2;
+    flex: 1;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  /* #content must NOT be an independent scroll container on mobile */
+  #content {width:100%;
+    overflow: visible;
+    min-height: 0;
+    flex: none;
+  }
+
+  #sidebar .feat-head {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    padding: 8px 4px;
+    flex-shrink: 0;
+    min-width: 24px;
+  }
+  .feat-tile {
+    min-width: 52vw;
+    flex-shrink: 0;
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+  }
+
   .mast-link { display: none; }
   .gui-sep { display: none; }
 
   /* search — full width, not squashed */
   .mast-center { padding: 0 8px; }
   .mast-search { max-width: none; flex: 1; }
-
-  /* view-tabs — horizontal scroll so chart sub-nav doesn't get lost */
+ .chart-wrap, #list-view {width:100%;max-width:100%;}
+  /* view-tabs — sticky below masthead, tabs scroll horizontally */
   .view-tabs {
     overflow-x: auto; overflow-y: visible;
     flex-wrap: nowrap; -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
   .view-tabs::-webkit-scrollbar { display: none; }
   .view-tab { padding: 8px 14px; font-size: 1.5rem; flex-shrink: 0; }
+
+  /* genre chips sticky just below tabs */
+  #genre-chips {
+    position: sticky;
+    top: 51px;
+    z-index: 9;
+  }
 
   .chart-top { grid-template-columns: 1fr; }
   .progress-wrap { width: 100px; }
   .prog-time { display: none; }
   .vol-wrap { display: none; }
+
   /* video above player on mobile */
   #vid-panel {
     position: fixed; bottom: var(--player-h); left: 0; right: 0;
@@ -891,7 +944,8 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   #vid-info { display: none; }
   #vid-panel #yt-inner { top: -42px; bottom: -42px; left: -2px; right: -2px; }
   #vid-resize-handle { display: none; }
-  .feat-skeleton { min-width: 52vw; }}
+  .feat-skeleton { min-width: 52vw; }
+}
 </style>
 </head>
 <body>
