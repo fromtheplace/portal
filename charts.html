@@ -843,57 +843,22 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
 ══════════════════════════════════════════════════════════════════ */
 @media (max-width: 600px) {
   :root { --player-h: 56px; }
-
-  /* app is a vertical scroll container — sidebar scrolls away, content stays */
-  #app {
-    flex-direction: column;
-    overflow-y: auto;
-    overflow-x: hidden;
-    /* allow natural document flow so sidebar scrolls out of view */
-    align-items: stretch;
-  }
-
-  /* sidebar sits at top, scrolls away with page — NOT sticky */
+  /* on mobile the app stacks vertically — sidebar on top, content below */
+  #app { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
   #sidebar {
-    width: 100% !important;
-    flex-shrink: 0;
-    position: static !important; /* never sticky on mobile */
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    overflow-y: visible;
-    flex-direction: row;
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
+    width: 100% !important; flex-shrink: 0;
+    border-right: none; border-bottom: 1px solid var(--border);
+    overflow-y: visible; flex-direction: row;
+    display: flex; flex-wrap: nowrap; overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
-    order: 1;
   }
   #sidebar::-webkit-scrollbar { display: none; }
-
-  /* centre takes remaining space, does NOT scroll independently */
-  #centre {
-    order: 2;
-    flex: 1;
-    min-height: 0;
-    overflow: visible; /* let #app handle scrolling */
-  }
-
-  #sidebar .feat-head {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    padding: 8px 4px;
-    flex-shrink: 0;
-    min-width: 24px;
-  }
-  .feat-tile {
-    min-width: 52vw;
-    flex-shrink: 0;
-    border-bottom: none;
-    border-right: 1px solid var(--border);
-  }
-
+  /* right sidebar snaps to bottom on mobile — order pushes it after content */
+  #sidebar  { order: 1; }
+  #centre   { order: 2; flex: 1; min-height: 0; overflow: hidden; }
+  #sidebar .feat-head { writing-mode: vertical-rl; text-orientation: mixed; padding: 8px 4px; flex-shrink: 0; min-width: 24px; }  .feat-tile { min-width: 52vw; flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border); }
   .mast-link { display: none; }
   .gui-sep { display: none; }
 
@@ -901,38 +866,19 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   .mast-center { padding: 0 8px; }
   .mast-search { max-width: none; flex: 1; }
 
-  /* view-tabs — sticky below masthead, tabs scroll horizontally */
+  /* view-tabs — horizontal scroll so chart sub-nav doesn't get lost */
   .view-tabs {
     overflow-x: auto; overflow-y: visible;
     flex-wrap: nowrap; -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    position: sticky;
-    top: 0;
-    z-index: 10;
   }
   .view-tabs::-webkit-scrollbar { display: none; }
   .view-tab { padding: 8px 14px; font-size: 1.5rem; flex-shrink: 0; }
-
-  /* genre chips sticky just below tabs */
-  #genre-chips {
-    position: sticky;
-    top: 51px;
-    z-index: 9;
-  }
-
-  /* #content must NOT be an independent scroll container on mobile —
-     #app handles all scrolling so sidebar can flow and scroll away */
-  #content {
-    overflow: visible;
-    min-height: 0;
-    flex: none;
-  }
 
   .chart-top { grid-template-columns: 1fr; }
   .progress-wrap { width: 100px; }
   .prog-time { display: none; }
   .vol-wrap { display: none; }
-
   /* video above player on mobile */
   #vid-panel {
     position: fixed; bottom: var(--player-h); left: 0; right: 0;
@@ -945,8 +891,7 @@ input[type=range].vol-slider::-moz-range-thumb { width: 10px; height: 10px; bord
   #vid-info { display: none; }
   #vid-panel #yt-inner { top: -42px; bottom: -42px; left: -2px; right: -2px; }
   #vid-resize-handle { display: none; }
-  .feat-skeleton { min-width: 52vw; }
-}
+  .feat-skeleton { min-width: 52vw; }}
 </style>
 </head>
 <body>
@@ -1225,11 +1170,10 @@ async function tbFetch(pipe){
 
 // ══════════════════════════════════════════════════════════════════
 //  SINGLE TINYBIRD ENDPOINT — vw_catalogue_data
-//  Returns one JSON response containing three keyed sections:
-//    data.chart   → ranked chart rows (replaces chart_scores)
-//    data.recent  → recent play order (replaces recent_plays)
-//    data.rising  → top track in last 24h (replaces inline SQL)
-//  Cache for 10 minutes to minimise daily query usage.
+//  One scan of ftp_plays returns everything via conditional aggregation.
+//  All rows are chart rows sorted by ftp_score DESC.
+//  Client derives recent order (sort by last_played) and rising
+//  (row with highest plays_24h) from the same payload — zero extra queries.
 // ══════════════════════════════════════════════════════════════════
 let tbCatalogueCache = null;
 let tbCatalogueCacheTime = 0;
@@ -1240,13 +1184,26 @@ async function fetchCatalogueData(bust) {
   const url = `${TB_HOST}/v0/pipes/vw_catalogue_data.json?token=${TB_READ_TOK}&_=${now}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  const rows = json.data || [];
-  tbCatalogueCache = {
-    chart:  rows.filter(r => r.section === 'chart'),
-    recent: rows.filter(r => r.section === 'recent'),
-    rising: rows.find(r => r.section === 'rising') || null,
-  };
+  const rows = (await res.json()).data || [];
+
+  // chart — already sorted ftp_score DESC by pipe
+  const chart = rows;
+
+  // recent — same rows re-sorted by last_played DESC
+  const recent = [...rows].sort((a, b) => {
+    const ta = a.last_played || '';
+    const tb2 = b.last_played || '';
+    return ta < tb2 ? 1 : ta > tb2 ? -1 : 0;
+  });
+
+  // rising — row with most plays in last 24h (min 1 play today)
+  const rising = rows
+    .filter(r => (parseInt(r.plays_24h) || 0) > 0)
+    .reduce((best, r) => {
+      return (!best || parseInt(r.plays_24h) > parseInt(best.plays_24h)) ? r : best;
+    }, null);
+
+  tbCatalogueCache = { chart, recent, rising };
   tbCatalogueCacheTime = now;
   return tbCatalogueCache;
 }
