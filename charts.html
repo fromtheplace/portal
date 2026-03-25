@@ -1390,7 +1390,7 @@ function trackSponsor(eventType, campaignId) {
       genre:      '',
       source:     'catalogue',
     });
-    fetch(`${TB_HOST}/v0/events?name=ftp_plays&token=${TB_READ_TOK}`,
+    fetch(`${TB_HOST}/v0/events?name=vw_catalogue_data&token=${TB_READ_TOK}`,
       { method:'POST', body, headers:{'Content-Type':'application/json'},
         keepalive:true, credentials:'omit' }
     ).catch(()=>{});
