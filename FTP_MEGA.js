@@ -30,7 +30,7 @@ var videoPlaylist = [
 { id: 't3S_1owNgg0', start: 1, end: 1386, title: 'Tali Joy - ŌHHH22 ' },
 { id: 'Onet82xMWdg', start: 1027, end: 1505, title: 'Reid+Wolken+Kelly - (Live at The Anteroom) Requiet' },
 { id: '7HxENNQql38', start: 1945, end: 2684, title: 'BETSY & THE RECKLESS - Space Concert' },
-{ id: 'DBf3rH0QIyo', start: 1993, end: 2220, title: 'Unrested stops (2022 11 01)' }
+{ id: 'DBf3rH0QIyo', start: 1993, end: 2220, title: 'Unrested stops (2022 11 01)' },
 { id: 'SqtiZsu9aIs', start: 1, end: 1986, title: 'TOUGH GUY - INDIE VOICES ' },
 { id: 'Onet82xMWdg', start: 5010, end: 5552, title: 'Reid+Wolken+Kelly - (Live at The Anteroom) Squally' },
 { id: 'y3-LF-9y1Vw', start: 805, end: 1055, title: 'Kylie Price - Searching for a Saint' },
@@ -257,7 +257,6 @@ var videoPlaylist = [
 { id: 'XNdZ249SJlU', start: 2288, end: 2578, title: 'FOTA - Sunny afternoon' },
 { id: 'oNo0vlT0UUQ', start: 584, end: 788, title: 'Alcatraz - Shook ones freestyle' },
 { id: 'oNo0vlT0UUQ', start: 410, end: 584, title: 'Alcatraz - Chivalrys dead' },
-{ id: 'GoP7KiDgCkg', start: 1, end: 1971, title: 'Dudstown Soundsystem - ŌHHH22 ' },
-
+{ id: 'GoP7KiDgCkg', start: 1, end: 1971, title: 'Dudstown Soundsystem - ŌHHH22 ' }
 // Total Playlist Length: 06:30:42
 ];
