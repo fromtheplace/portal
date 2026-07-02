@@ -253,8 +253,7 @@ body.fullscreen-active #vid-exit-fs-btn { display: flex; }
 /* ══════════════════════════════════════════════════════════════════
    MASTHEAD
 ══════════════════════════════════════════════════════════════════ */
-/* VIDEO WON logo — SVG inline, inverted to white */
-
+/* ── LOGO MARK ── */
 a.logo-mark {
   display: inline-flex;
   flex-direction: column;
@@ -269,7 +268,28 @@ a.logo-mark {
   font-family: sans-serif;
   background: rgba(0,0,0,0.22);
   box-shadow: 0 12px 40px rgba(0,0,0,0.25);
-}	
+}
+
+a.logo-mark:hover {
+  border-color: rgba(255,255,255,0.38);
+  transform: translateY(-1px);
+  background: rgba(0,0,0,0.32);
+}
+
+a.logo-mark .line-top {
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: #f1eee7;
+  opacity: 0.92;
+}
+
+a.logo-mark .line-bottom {
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: #f1eee7;
+}
 #logo-cell {
   display: flex; align-items: center; margin-top:-10px; padding: 0 16px;
   border-right: 1px solid #333;
