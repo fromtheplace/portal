@@ -49,7 +49,7 @@
   /* Ledger-line backgrounds — dark theme defaults */
   --ledger:     repeating-linear-gradient(to bottom, #181818, #181818 5px, #1e1e1e 5px, #1e1e1e 6px);
   --ledger-inv: repeating-linear-gradient(to bottom, #1e1e1e, #1e1e1e 5px, #181818 5px, #181818 6px);
-    --logo-scale:.82;
+    --logo-scale:1;
 }
 
 /* ── LIGHT THEME — newsprint editorial ──────────────────────────── */
@@ -261,14 +261,15 @@ a.logo-mark {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.75rem 0.85rem 0.85rem;
+      padding:12px 14px 13px;
+    border-radius:14px;
   line-height: 0.9;
   text-align: center;
   transition: border-color 0.2s, transform 0.2s, background 0.2s;
   flex-shrink: 0;
   font-family: sans-serif;
     border: 2px solid var(--red);
-    border-radius: 14px;
+    
     background: radial-gradient(ellipse at center, rgba(255,45,45,0.10) 0%, rgba(10,5,5,0) 70%);
     box-shadow:
       0 0 8px rgba(255,45,45,0.55),
@@ -277,6 +278,8 @@ a.logo-mark {
     transform:scale(var(--logo-scale));
     transform-origin:center;
   text-decoration:none;
+
+
 }
 
 a.logo-mark:hover {
@@ -286,7 +289,8 @@ a.logo-mark:hover {
 }
 
 a.logo-mark .line-top {
-  font-size: 0.74rem;
+    font-size:10px;
+  
   font-weight: 400;
   letter-spacing: 0.02em;
   color: var(--red);
@@ -294,7 +298,7 @@ a.logo-mark .line-top {
 }
 
 a.logo-mark .line-bottom {
-  font-size: 1.25rem;
+  font-size:17px;
   font-weight: 500;
   letter-spacing: -0.03em;
   color: var(--red);
