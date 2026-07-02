@@ -49,6 +49,7 @@
   /* Ledger-line backgrounds — dark theme defaults */
   --ledger:     repeating-linear-gradient(to bottom, #181818, #181818 5px, #1e1e1e 5px, #1e1e1e 6px);
   --ledger-inv: repeating-linear-gradient(to bottom, #1e1e1e, #1e1e1e 5px, #181818 5px, #181818 6px);
+    --logo-scale:.82;
 }
 
 /* ── LIGHT THEME — newsprint editorial ──────────────────────────── */
@@ -273,7 +274,8 @@ a.logo-mark {
       0 0 8px rgba(255,45,45,0.55),
       0 0 22px rgba(255,45,45,0.35),
       inset 0 0 12px rgba(255,45,45,0.25);
-
+    transform:scale(var(--logo-scale));
+    transform-origin:center;
 }
 
 a.logo-mark:hover {
