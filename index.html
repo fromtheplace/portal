@@ -267,10 +267,9 @@ a.logo-mark {
   text-align: center;
   transition: border-color 0.2s, transform 0.2s, background 0.2s;
   flex-shrink: 0;
-  font-family: sans-serif;
+  font-family: var(--font-tab);
     border: 2px solid var(--red);
-    
-    background: radial-gradient(ellipse at center, rgba(255,45,45,0.10) 0%, rgba(10,5,5,0) 70%);
+      background: radial-gradient(ellipse at center, rgba(255,45,45,0.10) 0%, rgba(10,5,5,0) 70%);
     box-shadow:
       0 0 8px rgba(255,45,45,0.55),
       0 0 22px rgba(255,45,45,0.35),
@@ -289,17 +288,18 @@ a.logo-mark:hover {
 }
 
 a.logo-mark .line-top {
-    font-size:10px;
+    font-size:9px;
     font-weight: 400;
-  letter-spacing: 0.02em;
+  
   color: var(--red);
   opacity: 0.92;
+  text-transform: uppercase;
 }
 
 a.logo-mark .line-bottom {
-  font-size:17px;
+  font-size:18px;
   font-weight: 500;
-  letter-spacing: -0.03em;
+  
   color: var(--red);
 }
 #logo-cell {
