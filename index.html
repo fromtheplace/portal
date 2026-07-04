@@ -1979,7 +1979,10 @@ function playTrack(idx){
   if(idx<0||idx>=TRACKS.length)return;
   const t=TRACKS[idx];
   currentIdx=idx; isPlaying=true;
-  recordPlay(idx);
+  // NOTE: recordPlay(idx) is intentionally NOT called here. It fires from
+  // startProgress() once real playback time crosses PLAY_RECORD_THRESHOLD_S.
+  // This avoids writing a play/analytics event to Tinybird for every click,
+  // rapid skip, or shuffle-through — only genuine listens get counted.
 
   // Player bar
   const wrap=document.getElementById('player-thumb-wrap');
@@ -2011,7 +2014,7 @@ function playTrack(idx){
     else{ytPlayer.loadVideoById({videoId:t.id,startSeconds:t.start,endSeconds:t.end||undefined});ytPlayer.playVideo();}
     if(ytPlayer?.setVolume) ytPlayer.setVolume(currentVolume);
   });
-  startProgress(t);
+  startProgress(t, idx);
   render();
   // refresh featured column playing state
   document.querySelectorAll('.feat-tile').forEach(tile => {
@@ -2130,15 +2133,33 @@ function onTrackEnd() {
   if (next >= 0) playTrack(next);
 }
 
-function startProgress(t){
+// A play only counts — and only writes to Tinybird — once the listener has
+// actually heard PLAY_RECORD_THRESHOLD_S real seconds of the chapter. This
+// is the single biggest write-volume lever: without it, every click, rapid
+// skip through the grid, or shuffle next/prev spam fired a write.
+const PLAY_RECORD_THRESHOLD_S = 10;
+let playRecordedForCurrentTrack = false;
+
+function startProgress(t, idx){
   clearInterval(progInterval);
+  playRecordedForCurrentTrack = false;
   const dur=Math.max(0,t.end-t.start); if(!dur) return;
+  // For chapters shorter than the flat threshold (rare, but exists in the
+  // catalogue), scale the bar down so a near-full listen still counts.
+  const recordAt = Math.min(PLAY_RECORD_THRESHOLD_S, dur * 0.85);
   progInterval=setInterval(()=>{
     if(!ytPlayer||!isPlaying) return;
     try{
       const cur=Math.max(0,ytPlayer.getCurrentTime()-t.start);
       document.getElementById('prog-fill').style.width=Math.min(100,(cur/dur)*100)+'%';
       document.getElementById('prog-cur').textContent=fmtDur(Math.floor(cur));
+      // cur is driven by the player's own clock, so it only accumulates
+      // while actually playing — pausing doesn't help reach the threshold
+      // faster, and skipping away clears this interval before it can fire.
+      if(!playRecordedForCurrentTrack && cur>=recordAt){
+        playRecordedForCurrentTrack = true;
+        recordPlay(idx);
+      }
     }catch(e){}
   },500);
 }
