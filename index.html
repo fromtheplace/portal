@@ -738,11 +738,16 @@ font-size: 16px;
 #yt-wrap {
   flex: 1; position: relative; overflow: hidden;
   background: #000; min-height: 0;
+  background-image: url(https://ftplays.vercel.app/images/images.jpg);
+  background-size: 242%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 /* pixel-based negative insets — proven working approach from v4 */
 #yt-inner {
   position: absolute;
   top: -48px; bottom: -48px; left: -2px; right: -2px;
+  opacity:0.8;
 }
 #yt-inner iframe,
 #yt-inner > div {
