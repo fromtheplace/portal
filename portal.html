@@ -338,7 +338,7 @@ const CHANNELS = [
     tag:      'CATALOGUE',
     desc:     'Ōtepoti music catalogue — clips, sets & sessions',
     live:     false,
-    href:     'charts.html',
+    href:     '/',
     featured: false,
     thumb:    null,
     thumbId:  null,
@@ -567,18 +567,72 @@ function buildCard(ch, grid) {
   if (ch.num === 8) {
     const fbNum = card.querySelector('.ch-thumb-fb-num');
     if (fbNum) {
-      fbNum.innerHTML = `<svg id="vw-logo" viewBox="0 0 175 75" xmlns="http://www.w3.org/2000/svg" aria-label="VIDEO WON" style="width:75%;height:auto;display:block">
-  <rect style="fill:#ffffff" x="0"   y="0" width="36" height="37" rx="1"/>
-  <text style="fill:#111111" x="15"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">V</text>
-  <rect style="fill:#ffffff" x="38"  y="0" width="22" height="37" rx="1"/>
-  <text style="fill:#111111" x="46"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">I</text>
-  <rect style="fill:#ffffff" x="62"  y="0" width="38" height="37" rx="1"/>
-  <text style="fill:#111111" x="79"  y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">D</text>
-  <rect style="fill:#ffffff" x="102" y="0" width="33" height="37" rx="1"/>
-  <text style="fill:#111111" x="115" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">E</text>
-  <rect style="fill:#ffffff" x="137" y="0" width="38" height="37" rx="1"/>
-  <text style="fill:#111111" x="153" y="30" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-style="italic" font-size="28" text-anchor="middle">O</text>
-  <text x="175" y="74" font-family="Arial,Helvetica,sans-serif" font-weight="100" font-style="italic" font-size="43" fill="#CC0000" text-anchor="end" letter-spacing="4">ШОN</text>
+      fbNum.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="24" result="blur"/>
+      <feColorMatrix
+        in="blur"
+        type="matrix"
+        values="
+          1 0 0 0 0
+          0 0 0 0 0
+          0 0 0 0 0
+          0 0 0 0.8 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="#171313"/>
+
+  <rect
+    x="90"
+    y="90"
+    width="620"
+    height="380"
+    rx="72"
+    fill="none"
+    stroke="#e00000"
+    stroke-width="16"
+    filter="url(#softGlow)"
+  />
+
+  <g
+    fill="#e00000"
+    font-family="Arial, Helvetica, sans-serif"
+    font-weight="700"
+    text-anchor="middle"
+  >
+    <text
+      x="400"
+      y="245"
+      font-size="76"
+      letter-spacing="-2"
+      filter="url(#glow)">
+      FROM THE
+    </text>
+
+    <text
+      x="400"
+      y="350"
+      font-size="136"
+      font-weight="900"
+      letter-spacing="-6"
+      filter="url(#glow)">
+      PLAYS
+    </text>
+  </g>
 </svg>`;
     }
   }
