@@ -54,23 +54,11 @@ body::before {
     background-image: url(images/logo-S.png);
     font-size: 0;
 }
-
-/* CH8 VIDEO WON — logo rendered via inline SVG injected by JS */
-.ch-card[data-ch-num="8"] .ch-thumb-fb {
-  background: #111;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-}
 .ch-card[data-ch-num="8"] .ch-thumb-fb-num {
+    background-image: url(images/ftplays.png);
   font-size: 0;
-  background: none;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
+
   .ch-thumb-fb-num {
 color: var(--text-lo);
     letter-spacing: -3px;
@@ -563,79 +551,6 @@ function buildCard(ch, grid) {
   grid.appendChild(card);
   cardMap[ch.num] = card;
 
-  // CH8 VIDEO WON — inject inline SVG logo into fallback plate
-  if (ch.num === 8) {
-    const fbNum = card.querySelector('.ch-thumb-fb-num');
-    if (fbNum) {
-      fbNum.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560">
-  <defs>
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="10" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-
-    <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
-      <feGaussianBlur stdDeviation="24" result="blur"/>
-      <feColorMatrix
-        in="blur"
-        type="matrix"
-        values="
-          1 0 0 0 0
-          0 0 0 0 0
-          0 0 0 0 0
-          0 0 0 0.8 0"/>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-  </defs>
-
-  <rect width="100%" height="100%" fill="#171313"/>
-
-  <rect
-    x="90"
-    y="90"
-    width="620"
-    height="380"
-    rx="72"
-    fill="none"
-    stroke="#e00000"
-    stroke-width="16"
-    filter="url(#softGlow)"
-  />
-
-  <g
-    fill="#e00000"
-    font-family="Arial, Helvetica, sans-serif"
-    font-weight="700"
-    text-anchor="middle"
-  >
-    <text
-      x="400"
-      y="245"
-      font-size="76"
-      letter-spacing="-2"
-      filter="url(#glow)">
-      FROM THE
-    </text>
-
-    <text
-      x="400"
-      y="350"
-      font-size="136"
-      font-weight="900"
-      letter-spacing="-6"
-      filter="url(#glow)">
-      PLAYS
-    </text>
-  </g>
-</svg>`;
-    }
-  }
 
   // Resolve now-playing async
   resolveNowPlaying(ch).then(result => {
