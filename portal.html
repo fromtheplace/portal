@@ -433,7 +433,7 @@ async function resolveNowPlaying(ch) {
 
   if (np.type === 'tinybird') {
     try {
-      const res  = await fetch(`${TB_HOST}/v0/pipes/chart_scores.json?token=${TB_READ_TOK}`, { cache: 'no-store' });
+      const res  = await fetch(`${TB_HOST}/v0/pipes/vw_catalogue_data.json?token=${TB_READ_TOK}`, { cache: 'no-store' });
       const data = await res.json();
       const rows = data?.data;
       if (!rows?.length) return { text: '#1 — No data yet', videoId: null };
