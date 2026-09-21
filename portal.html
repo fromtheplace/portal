@@ -424,7 +424,7 @@ animation: logoPulse 4s ease-in-out infinite;}
 .card-no{ font-family:var(--display); font-size:30px; line-height:1; padding-top:2px; color:var(--tv-dim-2); transition:color .12s; }
 .channel-card.featured .card-no,
 .channel-card:hover .card-no{ color:var(--tv-amber); }
-.card-name{ font-family:var(--condensed); font-weight:700; font-size:17px; letter-spacing:.01em; color:var(--tv-white); text-transform:uppercase; line-height:1.15; }
+.card-name{ font-family:var(--condensed); font-weight:700; font-size:17px; letter-spacing:.01em; color:var(--tv-white); text-transform:uppercase; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .card-desc{ font-family:var(--mono); font-size:10px; color:var(--tv-dim); margin-top:3px; letter-spacing:.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .card-tag{ display:inline-block; margin-top:8px; font-family:var(--mono); font-size:9px; font-weight:500; letter-spacing:.15em; color:var(--tv-dim); border:1px solid var(--tv-border-hi); padding:3px 8px; text-transform:uppercase; }
 .channel-card.featured .card-tag{ color:var(--tv-amber); border-color:rgba(226,149,63,.35); }
@@ -461,7 +461,7 @@ footer > div:last-child{border-right:0}
   color:var(--red);
   font-size:32px;
   line-height:.8;
-      MARGIN-LEFT: -1REM;
+MARGIN-LEFT: -1REM;
 }
 
 /* responsive */
@@ -687,13 +687,14 @@ function parseTitle(title) {
 }
 
 function playlistNowPlaying(playlist) {
-  const { index } = getLivePosition(playlist);
+  const { index, seekOffset } = getLivePosition(playlist);
   const track = playlist[index];
-  if (!track) return { text: '—', videoId: null };
+  if (!track) return { text: '—', videoId: null, seek: 0 };
   const p = parseTitle(track.title);
   return {
     text:    p.artist + (p.context ? ' — ' + p.context : ''),
     videoId: track.id,
+    seek:    Math.max(0, Math.floor(seekOffset || 0)),
   };
 }
 
@@ -774,6 +775,9 @@ async function resolveNowPlaying(ch) {
 function ytThumbUrl(id, quality) {
   return `https://i.ytimg.com/vi/${id}/${quality}.jpg`;
 }
+function ytEmbedUrl(id, seekSeconds) {
+  return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&start=${Math.max(0, Math.floor(seekSeconds || 0))}`;
+}
 function loadLiveThumb(img, videoId, onDone) {
   img.onerror = () => {
     img.onerror = () => onDone && onDone(false);
@@ -824,7 +828,7 @@ function buildCard(ch, grid) {
     <div class="card-meta">
       <div class="card-no">${n}</div>
       <div>
-        <div class="card-name">${ch.name}</div>
+        <div class="card-name" data-name>${ch.name}</div>
         <div class="card-desc">${ch.desc}</div>
         <div class="card-tag">${ch.tag}</div>
       </div>
@@ -857,7 +861,8 @@ function buildCard(ch, grid) {
 
   // resolve now-playing asynchronously
   resolveNowPlaying(ch).then(result => {
-    const npEl = card.querySelector('[data-np]');
+    const npEl   = card.querySelector('[data-np]');
+    const nameEl = card.querySelector('[data-name]');
     if (!npEl) return;
 
     if (!ch.nowPlaying) {
@@ -869,19 +874,27 @@ function buildCard(ch, grid) {
     if (result?.text) {
       npEl.textContent = result.text;
       npEl.classList.remove('loading');
+      if (nameEl) nameEl.textContent = result.text;
     } else {
       npEl.textContent = 'signal lost';
       npEl.classList.remove('loading');
       npEl.classList.add('error');
+      if (nameEl) nameEl.textContent = ch.name; // fall back to the channel name
     }
 
     if (result?.videoId) {
       liveVideoId = result.videoId;
+      ch._liveVideoId = result.videoId; // exposed for tuneToChannel's embed upgrade
+      ch._liveSeek    = result.seek || 0;
       // featured channel's static cover also updates to the current live frame
       if (ch.featured && staticImg) {
         const liveSrc = ytThumbUrl(result.videoId, 'hqdefault');
         if (staticImg.src !== liveSrc) staticImg.src = liveSrc;
       }
+      // if this channel is the one currently loaded in the player and it's
+      // still sitting on the raw-href fallback (or an older resolve), swap
+      // it over to the real YouTube embed now that we have a videoId
+      if (CHANNELS[currentChIndex]?.num === ch.num) tuneToChannel(ch);
     }
   });
 }
@@ -891,7 +904,8 @@ function refreshNowPlaying() {
   CHANNELS.forEach(ch => {
     const card = cardMap[ch.num];
     if (!card) return;
-    const npEl = card.querySelector('[data-np]');
+    const npEl   = card.querySelector('[data-np]');
+    const nameEl = card.querySelector('[data-name]');
     if (!npEl) return;
     npEl.textContent = '···';
     npEl.classList.add('loading');
@@ -900,10 +914,19 @@ function refreshNowPlaying() {
       if (result?.text) {
         npEl.textContent = result.text;
         npEl.classList.remove('loading');
+        if (nameEl) nameEl.textContent = result.text;
       } else {
         npEl.textContent = ch.nowPlaying ? 'signal lost' : '—';
         npEl.classList.remove('loading');
         if (ch.nowPlaying) npEl.classList.add('error');
+        if (nameEl) nameEl.textContent = ch.name;
+      }
+      // keep the resolved videoId/seek current for next time this channel
+      // is tuned — deliberately does NOT call tuneToChannel here, so an
+      // actively playing embed is never interrupted by this 60s refresh
+      if (result?.videoId) {
+        ch._liveVideoId = result.videoId;
+        ch._liveSeek    = result.seek || 0;
       }
     });
   });
@@ -930,13 +953,20 @@ function tuneToChannel(ch) {
     li.classList.toggle('active', a && Number(a.dataset.ch) === ch.num);
   });
 
+  // Prefer embedding the resolved YouTube video directly — YouTube allows
+  // framing by default, unlike the channel's own page, which may set
+  // X-Frame-Options/CSP and refuse to render in an iframe at all (this is
+  // almost always why the player looks blank). Falls back to the raw href
+  // until the temporal-position engine has resolved a videoId for it.
+  const src = ch._liveVideoId ? ytEmbedUrl(ch._liveVideoId, ch._liveSeek) : ch.href;
+
   // set src synchronously, in the same tick as the click, so the browser
   // treats the iframe navigation as a direct result of the user's gesture
   // (this is what gives the destination page the best chance of it autoplaying
   // without needing a second click inside the frame)
-  if (ytFrame.src !== ch.href) {
+  if (ytFrame.src !== src) {
     staticEl.style.opacity = '1';
-    ytFrame.src = ch.href;
+    ytFrame.src = src;
   }
   setTimeout(() => { staticEl.style.opacity = '0'; }, 220);
 }
