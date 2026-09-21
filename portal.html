@@ -191,13 +191,14 @@ transform: translate(0px, 0.3rem);
   inset:0;
   width:100%;
   height:100%;
-  border:0;
   background:#000;
 }
-/* click/touch/key lock — sits directly over the iframe so nothing can
-   reach YouTube's player: no pause, no scrub, no fullscreen, no context
-   menu. This is what keeps every viewer locked to the same synced
-   position instead of a normal, pausable embed. */
+#yt iframe{ width:100%; height:100%; display:block; border:0; }
+/* click/touch/key lock — sits directly over the player so nothing can
+   reach it directly: no pause, no scrub, no fullscreen, no context
+   menu. Only our own controls (arrows, volume — higher z-index, their
+   own pointer-events:auto) can affect playback. This is what keeps
+   every viewer locked to the same synced position. */
 .player-lock{
   position:absolute;
   inset:0;
@@ -214,6 +215,15 @@ transform: translate(0px, 0.3rem);
   pointer-events:none;
   transition:opacity .12s;
 }
+.player-status{
+  position:absolute; inset:0; z-index:3;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:10px; letter-spacing:.3em; text-transform:uppercase;
+  color:rgba(245,240,232,.35);
+  pointer-events:none;
+  transition:opacity .3s ease;
+}
+.player-status.gone{ opacity:0; }
 .player-arrows{
   position:absolute;
   inset:0;
@@ -237,6 +247,95 @@ transform: translate(0px, 0.3rem);
   transition:background .15s,border-color .15s;
 }
 .player-arrows button:hover{background:var(--red);border-color:var(--red)}
+
+/* volume cluster — the actual controllable audio path, wired to the
+   YouTube Player API rather than reloading the embed like the old
+   src-swap approach had to */
+.player-volume{
+  position:absolute;
+  right:14px; bottom:14px;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:7px 12px;
+  background:rgba(17,17,15,.55);
+  border:1px solid rgba(238,233,220,.3);
+}
+.vol-btn{
+  pointer-events:auto;
+  width:16px;height:16px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--paper);
+  background:none; border:0; padding:0; cursor:pointer;
+  flex-shrink:0;
+}
+.vol-btn svg{ width:100%; height:100%; }
+.vol-slider{
+  -webkit-appearance:none; appearance:none;
+  width:70px; height:3px;
+  background:rgba(245,240,232,.25);
+  outline:none; cursor:pointer;
+  pointer-events:auto;
+}
+.vol-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--paper); cursor:pointer;
+}
+.vol-slider::-moz-range-thumb{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--paper); border:0; cursor:pointer;
+}
+
+/* muted hint */
+.muted-hint{
+  position:absolute;
+  left:14px;
+  bottom:14px;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:6px 11px;
+  background:rgba(17,17,15,.55);
+  border:1px solid rgba(238,233,220,.3);
+  color:var(--paper);
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  pointer-events:none;
+  opacity:1;
+  transition:opacity .3s ease;
+}
+.muted-hint.gone{ opacity:0; }
+.muted-hint svg{ width:12px;height:12px;flex-shrink:0; }
+
+/* channel bump — brief full-cover ident shown on channel change (and on
+   a natural track-to-track transition within a channel), mirroring the
+   stinger from the standalone channel players: near-instant show,
+   slow fade-out once the next thing is ready. Purely cosmetic — it
+   never blocks input, exactly like the source treatment. */
+.channel-bump{
+  position:absolute; inset:0; z-index:7;
+  background:#000;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  opacity:0; pointer-events:none;
+  transition:opacity 1.4s ease;
+}
+.channel-bump.show{ opacity:1; transition:opacity .05s ease; }
+.channel-bump .bump-mark{
+  width:130px; height:130px;
+  color:var(--paper);
+  display:flex; align-items:center; justify-content:center;
+}
+.channel-bump .bump-mark svg{ width:100%; height:100%; }
+.channel-bump .bump-mark .logo-mark{ width:100%; height:100%; }
+.channel-bump .bump-tag{
+  font-family:var(--mono); font-size:9px; letter-spacing:.35em;
+  color:rgba(245,240,232,.4); text-transform:uppercase;
+}
 
 .front-side{
   padding:0;
@@ -538,12 +637,28 @@ MARGIN-LEFT: -1REM;
 
 <section id="hero" class="front">
   <div class="front-main">
-    <iframe id="yt" allow="autoplay; encrypted-media" tabindex="-1"></iframe>
+    <div id="yt"></div>
     <div id="static"></div>
+    <div class="player-status" id="player-status">Searching for signal</div>
     <div class="player-lock" oncontextmenu="return false"></div>
+    <div class="channel-bump" id="channel-bump">
+      <div class="bump-mark"></div>
+      <div class="bump-tag"></div>
+    </div>
+    <div class="muted-hint" id="muted-hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+      Muted — click to unmute
+    </div>
     <div class="player-arrows">
       <button id="prev" type="button" aria-label="Previous channel">‹</button>
       <button id="next" type="button" aria-label="Next channel">›</button>
+    </div>
+    <div class="player-volume">
+      <button class="vol-btn" id="vol-btn" type="button" aria-label="Toggle mute">
+        <svg id="vol-icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+        <svg id="vol-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a9 9 0 0 1 0 12"/></svg>
+      </button>
+      <input class="vol-slider" id="vol-slider" type="range" min="0" max="100" value="0" aria-label="Volume">
     </div>
   </div>
   <aside class="front-side">
@@ -787,15 +902,6 @@ async function resolveNowPlaying(ch) {
 function ytThumbUrl(id, quality) {
   return `https://i.ytimg.com/vi/${id}/${quality}.jpg`;
 }
-function ytEmbedUrl(id, seekSeconds) {
-  const start = Math.max(0, Math.floor(seekSeconds || 0));
-  // controls=0/disablekb=1/fs=0 strip YouTube's own play/pause/seek/fullscreen
-  // chrome; combined with the .player-lock overlay in the markup (which
-  // blocks every click/touch/key from ever reaching the iframe), this is
-  // what keeps every viewer locked to the same synced position — no pausing,
-  // no scrubbing, no fullscreen escape hatch.
-  return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&playsinline=1&start=${start}`;
-}
 function loadLiveThumb(img, videoId, onDone) {
   img.onerror = () => {
     img.onerror = () => onDone && onDone(false);
@@ -952,15 +1058,108 @@ function refreshNowPlaying() {
 setInterval(refreshNowPlaying, 60_000); // tracks are typically 3–15 min
 
 // ══════════════════════════════════════════════════════════════════
-//  PLAYER — the landing area IS the player; tiles + arrows tune it
+//  PLAYER — the landing area IS the player; tiles + arrows tune it.
+//  Built on the real YouTube IFrame Player API (not a raw src iframe)
+//  so volume is actually controllable, matching the channel players'
+//  own approach — same reason they use YT.Player + cueVideoById rather
+//  than an <iframe src="...embed...">.
 // ══════════════════════════════════════════════════════════════════
-const ytFrame      = document.getElementById('yt');
-const staticEl     = document.getElementById('static');
-const headerCh     = document.getElementById('header-ch');
-const navLis       = document.querySelectorAll('#channel-nav li');
-let currentChIndex = 0;
+const staticEl       = document.getElementById('static');
+const statusEl       = document.getElementById('player-status');
+const bumpEl         = document.getElementById('channel-bump');
+const headerCh       = document.getElementById('header-ch');
+const navLis         = document.querySelectorAll('#channel-nav li');
+const volBtn         = document.getElementById('vol-btn');
+const volSlider      = document.getElementById('vol-slider');
+const volIconMuted   = document.getElementById('vol-icon-muted');
+const volIconOn      = document.getElementById('vol-icon-on');
+let currentChIndex   = 0;
+let ytPlayer         = null;
+let playerReady      = false;
+let pendingLoad      = null;   // {videoId, seek} — queued if tuned before the API is ready
+let currentVideoId   = null;
+let isMuted          = true;
+let lastVolume       = 80;
+
+// ── Boot the YouTube IFrame API ──────────────────────────────────────
+(function loadYTAPI() {
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
+
+window.onYouTubeIframeAPIReady = function () {
+  ytPlayer = new YT.Player('yt', {
+    width: '100%', height: '100%',
+    playerVars: {
+      autoplay: 1, mute: 1, controls: 0, disablekb: 1,
+      modestbranding: 1, rel: 0, iv_load_policy: 3, fs: 0, playsinline: 1,
+    },
+    events: {
+      onReady: () => {
+        playerReady = true;
+        if (pendingLoad) {
+          ytPlayer.loadVideoById({ videoId: pendingLoad.videoId, startSeconds: pendingLoad.seek });
+          currentVideoId = pendingLoad.videoId;
+          pendingLoad = null;
+          applyMuteState();
+        }
+      },
+      onStateChange: (e) => {
+        if (e.data === YT.PlayerState.PLAYING) statusEl.classList.add('gone');
+        // natural track end within the current channel — re-derive the
+        // live position and continue, same "wall clock is the source of
+        // truth" logic as the standalone channel players
+        if (e.data === YT.PlayerState.ENDED) continueChannel();
+      },
+      onError: () => continueChannel(),
+    },
+  });
+};
+
+// ── Load a resolved video into the player ────────────────────────────
+function loadIntoPlayer(videoId, seek) {
+  if (!videoId) return;
+  currentVideoId = videoId;
+  if (!playerReady) { pendingLoad = { videoId, seek }; return; }
+  ytPlayer.loadVideoById({ videoId, startSeconds: Math.max(0, Math.floor(seek || 0)) });
+  applyMuteState();
+}
+
+function applyMuteState() {
+  if (!playerReady) return;
+  if (isMuted) { ytPlayer.mute(); }
+  else { ytPlayer.unMute(); ytPlayer.setVolume(lastVolume); }
+}
+
+// ── Channel bump — brief ident overlay, mirrors the standalone
+//    channel players' stinger between tracks ──────────────────────────
+function showBump(ch, duration = 650) {
+  bumpEl.querySelector('.bump-mark').innerHTML = ch.mark;
+  bumpEl.querySelector('.bump-tag').textContent = `You're watching ${ch.name}`;
+  bumpEl.classList.add('show');
+  staticEl.style.opacity = '1';
+  setTimeout(() => { staticEl.style.opacity = '0'; }, 90);
+  setTimeout(() => { bumpEl.classList.remove('show'); }, duration);
+}
+
+// re-resolve the currently tuned channel's live position and continue —
+// used both for natural track-end and can be called standalone
+function continueChannel() {
+  const ch = CHANNELS[currentChIndex];
+  if (!ch) return;
+  showBump(ch, 650);
+  resolveNowPlaying(ch).then(result => {
+    if (result?.videoId) {
+      ch._liveVideoId = result.videoId;
+      ch._liveSeek    = result.seek || 0;
+      loadIntoPlayer(result.videoId, result.seek);
+    }
+  });
+}
 
 function tuneToChannel(ch) {
+  const isChannelSwitch = CHANNELS[currentChIndex]?.num !== ch.num;
   currentChIndex = CHANNELS.findIndex(c => c.num === ch.num);
   const n = String(ch.num).padStart(2, '0');
 
@@ -971,22 +1170,17 @@ function tuneToChannel(ch) {
     li.classList.toggle('active', a && Number(a.dataset.ch) === ch.num);
   });
 
-  // Prefer embedding the resolved YouTube video directly — YouTube allows
-  // framing by default, unlike the channel's own page, which may set
-  // X-Frame-Options/CSP and refuse to render in an iframe at all (this is
-  // almost always why the player looks blank). Falls back to the raw href
-  // until the temporal-position engine has resolved a videoId for it.
-  const src = ch._liveVideoId ? ytEmbedUrl(ch._liveVideoId, ch._liveSeek) : ch.href;
-
-  // set src synchronously, in the same tick as the click, so the browser
-  // treats the iframe navigation as a direct result of the user's gesture
-  // (this is what gives the destination page the best chance of it autoplaying
-  // without needing a second click inside the frame)
-  if (ytFrame.src !== src) {
-    staticEl.style.opacity = '1';
-    ytFrame.src = src;
+  if (isChannelSwitch) {
+    showBump(ch, 650);
+    statusEl.classList.toggle('gone', !!ch._liveVideoId);
   }
-  setTimeout(() => { staticEl.style.opacity = '0'; }, 220);
+
+  // Nothing to load into the player yet — the temporal-position engine
+  // hasn't resolved a videoId for this channel. buildCard's own resolve
+  // (or the periodic refresh) will call tuneToChannel again the instant
+  // it has one; until then the status label stays visible instead of
+  // showing a blank/frozen frame.
+  if (ch._liveVideoId) loadIntoPlayer(ch._liveVideoId, ch._liveSeek);
 }
 
 function stepChannel(dir) {
@@ -1005,6 +1199,51 @@ document.querySelectorAll('#channel-nav a').forEach(a => {
     if (ch) tuneToChannel(ch);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════
+//  VOLUME CONTROL
+// ══════════════════════════════════════════════════════════════════
+function setVolumeUI(muted, value) {
+  volIconMuted.style.display = muted || value === 0 ? '' : 'none';
+  volIconOn.style.display    = !muted && value > 0 ? '' : 'none';
+  volSlider.value = muted ? 0 : value;
+}
+
+function setVolume(v) {
+  v = Math.max(0, Math.min(100, parseInt(v, 10) || 0));
+  isMuted = v === 0;
+  if (!isMuted) lastVolume = v;
+  applyMuteState();
+  if (playerReady && !isMuted) ytPlayer.setVolume(v);
+  setVolumeUI(isMuted, v);
+  markGesture();
+}
+
+function toggleMute() {
+  if (isMuted) { setVolume(lastVolume || 80); }
+  else { isMuted = true; applyMuteState(); setVolumeUI(true, 0); }
+  markGesture();
+}
+
+volSlider.addEventListener('input', (e) => setVolume(e.target.value));
+volBtn.addEventListener('click', toggleMute);
+
+// ══════════════════════════════════════════════════════════════════
+//  AUTOPLAY UNLOCK
+//  Landing loads muted (guaranteed to autoplay everywhere). The first
+//  gesture anywhere on the page unmutes in place via the Player API —
+//  no reload needed, unlike a raw src-swap embed. Fires once.
+// ══════════════════════════════════════════════════════════════════
+let hasUserGesture = false;
+function markGesture() {
+  if (hasUserGesture) return;
+  hasUserGesture = true;
+  document.getElementById('muted-hint')?.classList.add('gone');
+  if (isMuted) setVolume(lastVolume || 80);
+}
+['pointerdown', 'keydown'].forEach(evt =>
+  document.addEventListener(evt, markGesture, { capture: true, once: true })
+);
 
 // ══════════════════════════════════════════════════════════════════
 //  CLOCK + FOOTER YEAR
