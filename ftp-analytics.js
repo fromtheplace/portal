@@ -108,7 +108,7 @@ const FTP_ANALYTICS = (() => {
       // Tinybird Events API accepts newline-delimited JSON.
       const body = batch.map(event => JSON.stringify(event)).join('\n');
 
-      await fetch(`${ENDPOINT}&token=${TOKEN}`, {
+      const response = await fetch(`${ENDPOINT}&token=${TOKEN}`, {
         method: 'POST',
         body,
         headers: {
@@ -117,6 +117,10 @@ const FTP_ANALYTICS = (() => {
         keepalive: true,
         credentials: 'omit',
       });
+
+if (!response.ok) {
+  throw new Error(`Tinybird returned HTTP ${response.status}`);
+}
 
     } catch (_) {
       // Put failed events back at the front of the queue.
