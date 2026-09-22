@@ -779,6 +779,77 @@ CHANNELS[0].nowPlaying.playlist = (typeof videoPlaylist !== 'undefined') ? video
 const TB_HOST     = 'https://api.europe-west2.gcp.tinybird.co';
 const TB_READ_TOK = 'p.eyJ1IjogIjkxM2Y0MzdlLTc5OTItNGJjYS05MTY1LWQzYzBiMmE0ZGRkNiIsICJpZCI6ICIwZTk0NzZmMy0xMDI5LTRiZGMtYjZhNy1jNDQ4MDBmY2E3YTIiLCAiaG9zdCI6ICJnY3AtZXVyb3BlLXdlc3QyIn0.-CzFOa6KiJG9GeE8aA83Wcz7Ty7nlh2PjvWWcbew2Nc';
 
+// ── From The Plays chart → sequenced playlist ───────────────────────
+// Turns the catalogue chart into the same {id, title, start, end}
+// shape every other channel's playlist uses, so CH8 runs through the
+// SAME temporal-position engine instead of freezing on a static #1:
+// #1 gets the longest dwell, then a "Rising" tier, then the rest of
+// the list in score order — then it loops.
+//
+// Tunable — I don't know your pipe's real pacing intent, these are
+// reasonable placeholders:
+const CHART_DWELL_HERO   = 240; // seconds #1 stays "on air" per lap
+const CHART_DWELL_RISING = 150; // seconds each Rising track gets
+const CHART_DWELL_REST   = 90;  // seconds everything else gets
+const CHART_RISING_COUNT = 4;   // how many tracks after #1 count as "Rising"
+                                 // (position-based fallback — see below)
+
+// If your pipe exposes an explicit trend/movement field, this picks it
+// up automatically instead of guessing by position. Add its real name
+// to this list once you confirm it (e.g. 'trend', 'rank_delta', ...).
+function chartRowIsRising(row) {
+  const raw = row.trend ?? row.movement ?? row.direction ?? row.rank_change ?? row.delta;
+  if (raw == null) return null; // unknown — caller falls back to position
+  if (typeof raw === 'string') return /^(up|rising)\b|▲|^\+/.test(raw.trim().toLowerCase());
+  return Number(raw) > 0;
+}
+
+function chartToPlaylist(rows) {
+  const sorted = [...rows]
+    .filter(r => r.video_id)
+    .sort((a, b) => parseFloat(b.ftp_score || 0) - parseFloat(a.ftp_score || 0));
+
+  let cursor = 0;
+  return sorted.map((row, i) => {
+    const explicit = i === 0 ? false : chartRowIsRising(row);
+    const rising   = i === 0 ? false : (explicit !== null ? explicit : i <= CHART_RISING_COUNT);
+    const tier     = i === 0 ? '#1' : rising ? 'Rising' : `#${i + 1}`;
+    const dwell    = i === 0 ? CHART_DWELL_HERO : rising ? CHART_DWELL_RISING : CHART_DWELL_REST;
+    const artist   = row.artist || row.title || '—';
+
+    const item = {
+      id:    row.video_id,
+      title: `${artist} — ${tier}`, // parsed by parseTitle() same as every other track title
+      start: cursor,
+      end:   cursor + dwell,
+      videoSeekBase: 0, // each chart entry is its own standalone video, not a chapter of a shared one
+    };
+    cursor += dwell;
+    return item;
+  });
+}
+
+let _chartCache   = null;
+let _chartCacheAt = 0;
+const CHART_TTL_MS = 5 * 60 * 1000; // re-fetch the chart at most every 5 minutes
+
+async function getChartPlaylist() {
+  const now = Date.now();
+  if (_chartCache && (now - _chartCacheAt) < CHART_TTL_MS) return _chartCache;
+  try {
+    const res  = await fetch(`${TB_HOST}/v0/pipes/vw_catalogue_data.json?token=${TB_READ_TOK}`, { cache: 'no-store' });
+    const data = await res.json();
+    const rows = data?.data;
+    if (!rows?.length) return _chartCache; // serve stale cache over nothing, if we have one
+    _chartCache   = chartToPlaylist(rows);
+    _chartCacheAt = now;
+    return _chartCache;
+  } catch (e) {
+    console.warn('[portal] chart fetch:', e.message);
+    return _chartCache;
+  }
+}
+
 // ══════════════════════════════════════════════════════════════════
 //  TEMPORAL POSITION ENGINE
 //  Each channel's "now playing" is computed, not fetched from a live
@@ -816,12 +887,21 @@ function parseTitle(title) {
 function playlistNowPlaying(playlist) {
   const { index, seekOffset } = getLivePosition(playlist);
   const track = playlist[index];
-  if (!track) return { text: '—', videoId: null, seek: 0 };
+  if (!track) return { text: '—', videoId: null, seek: 0, endAt: 0 };
   const p = parseTitle(track.title);
+  // videoSeekBase distinguishes "this track's absolute position within a
+  // shared source video" (CH1/2/3 — chapters of one long recording, where
+  // track.start IS that absolute position) from "a standalone video that
+  // starts fresh" (CH8's chart entries — track.start there is only a
+  // cumulative offset in the synthetic rotation, not a real seek position).
+  // Defaults to track.start, which is what every real playlist wants.
+  const base = track.videoSeekBase !== undefined ? track.videoSeekBase : track.start;
+  const clipLen = track.end - track.start;
   return {
     text:    p.artist + (p.context ? ' — ' + p.context : ''),
     videoId: track.id,
-    seek:    Math.max(0, Math.floor(seekOffset || 0)),
+    seek:    Math.max(0, Math.floor(base + (seekOffset || 0))),
+    endAt:   Math.max(0, Math.floor(base + clipLen)), // absolute end, for manual clip-boundary enforcement
   };
 }
 
@@ -867,20 +947,9 @@ async function resolveNowPlaying(ch) {
   }
 
   if (np.type === 'tinybird') {
-    try {
-      const res  = await fetch(`${TB_HOST}/v0/pipes/vw_catalogue_data.json?token=${TB_READ_TOK}`, { cache: 'no-store' });
-      const data = await res.json();
-      const rows = data?.data;
-      if (!rows?.length) return { text: '#1 — No data yet', videoId: null };
-      const top = [...rows].sort((a, b) => parseFloat(b.ftp_score || 0) - parseFloat(a.ftp_score || 0))[0];
-      const artist = top.artist || top.title || '—';
-      const title  = top.title  || '';
-      const label  = artist !== title && title ? `${artist} — ${title}` : artist;
-      return { text: `#1  ${label}`, videoId: top.video_id || null };
-    } catch (e) {
-      console.warn('[portal] Tinybird chart fetch:', e.message);
-      return { text: '#1 — unavailable', videoId: null };
-    }
+    const playlist = await getChartPlaylist();
+    if (!playlist?.length) return { text: '#1 — unavailable', videoId: null, seek: 0 };
+    return playlistNowPlaying(playlist); // same engine as every other channel
   }
 
   return null;
@@ -1010,6 +1079,7 @@ function buildCard(ch, grid) {
       liveVideoId = result.videoId;
       ch._liveVideoId = result.videoId; // exposed for tuneToChannel's embed upgrade
       ch._liveSeek    = result.seek || 0;
+      ch._liveEndAt   = result.endAt || 0;
       // featured channel's static cover also updates to the current live frame
       if (ch.featured && staticImg) {
         const liveSrc = ytThumbUrl(result.videoId, 'hqdefault');
@@ -1051,6 +1121,7 @@ function refreshNowPlaying() {
       if (result?.videoId) {
         ch._liveVideoId = result.videoId;
         ch._liveSeek    = result.seek || 0;
+        ch._liveEndAt   = result.endAt || 0;
       }
     });
   });
@@ -1076,10 +1147,12 @@ const volIconOn      = document.getElementById('vol-icon-on');
 let currentChIndex   = 0;
 let ytPlayer         = null;
 let playerReady      = false;
-let pendingLoad      = null;   // {videoId, seek} — queued if tuned before the API is ready
+let pendingLoad      = null;   // {videoId, seek, endAt} — queued if tuned before the API is ready
 let currentVideoId   = null;
 let isMuted          = true;
 let lastVolume       = 80;
+let clipEndAt        = 0;      // absolute source-video second where the current clip should stop
+let clipWatcher      = null;   // polls playback position — endSeconds alone isn't reliable
 
 // ── Boot the YouTube IFrame API ──────────────────────────────────────
 (function loadYTAPI() {
@@ -1101,15 +1174,17 @@ window.onYouTubeIframeAPIReady = function () {
         if (pendingLoad) {
           ytPlayer.loadVideoById({ videoId: pendingLoad.videoId, startSeconds: pendingLoad.seek });
           currentVideoId = pendingLoad.videoId;
+          clipEndAt = pendingLoad.endAt || 0;
           pendingLoad = null;
           applyMuteState();
+          startClipWatcher();
         }
       },
       onStateChange: (e) => {
         if (e.data === YT.PlayerState.PLAYING) statusEl.classList.add('gone');
-        // natural track end within the current channel — re-derive the
-        // live position and continue, same "wall clock is the source of
-        // truth" logic as the standalone channel players
+        // Natural end of the underlying source video itself (rare — this
+        // is a real fallback, not the normal path; see startClipWatcher
+        // for how a clip's own boundary, mid-video, actually gets enforced)
         if (e.data === YT.PlayerState.ENDED) continueChannel();
       },
       onError: () => continueChannel(),
@@ -1118,12 +1193,36 @@ window.onYouTubeIframeAPIReady = function () {
 };
 
 // ── Load a resolved video into the player ────────────────────────────
-function loadIntoPlayer(videoId, seek) {
+function loadIntoPlayer(videoId, seek, endAt) {
   if (!videoId) return;
   currentVideoId = videoId;
-  if (!playerReady) { pendingLoad = { videoId, seek }; return; }
-  ytPlayer.loadVideoById({ videoId, startSeconds: Math.max(0, Math.floor(seek || 0)) });
+  clipEndAt = endAt || 0;
+  if (!playerReady) { pendingLoad = { videoId, seek, endAt }; return; }
+  ytPlayer.loadVideoById({
+    videoId,
+    startSeconds: Math.max(0, Math.floor(seek || 0)),
+    endSeconds:   endAt || undefined, // a hint only — unreliable on mobile, hence the watcher below
+  });
   applyMuteState();
+  startClipWatcher();
+}
+
+// A track's start/end are chapter boundaries inside one shared source
+// video, not a standalone clip — YouTube's own endSeconds param is known
+// to be ignored on mobile, so this is the actual enforcement: poll
+// playback position and advance the moment we cross the clip's own end,
+// rather than waiting for (or relying on) the whole source video to end.
+function startClipWatcher() {
+  clearInterval(clipWatcher);
+  if (!clipEndAt) return;
+  clipWatcher = setInterval(() => {
+    if (!playerReady || !ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
+    const cur = ytPlayer.getCurrentTime();
+    if (cur >= clipEndAt - 0.5) {
+      clearInterval(clipWatcher);
+      continueChannel();
+    }
+  }, 500);
 }
 
 function applyMuteState() {
@@ -1153,7 +1252,8 @@ function continueChannel() {
     if (result?.videoId) {
       ch._liveVideoId = result.videoId;
       ch._liveSeek    = result.seek || 0;
-      loadIntoPlayer(result.videoId, result.seek);
+      ch._liveEndAt   = result.endAt || 0;
+      loadIntoPlayer(result.videoId, result.seek, result.endAt);
     }
   });
 }
@@ -1180,7 +1280,7 @@ function tuneToChannel(ch) {
   // (or the periodic refresh) will call tuneToChannel again the instant
   // it has one; until then the status label stays visible instead of
   // showing a blank/frozen frame.
-  if (ch._liveVideoId) loadIntoPlayer(ch._liveVideoId, ch._liveSeek);
+  if (ch._liveVideoId) loadIntoPlayer(ch._liveVideoId, ch._liveSeek, ch._liveEndAt);
 }
 
 function stepChannel(dir) {
