@@ -7,7 +7,6 @@ var videoPlaylist = [
 { id: 'OGuTg98uTjg', start: 1, end: 1426, title: 'Te Kahui — ŌHHH24 [FULL SET] #rap' },
 { id: '1uKp4Tems4M', start: 221, end: 514, title: 'Person Will - Good Luck' },
 { id: 'wjsr8ZmaRVA', start: 791, end: 1128, title: 'FILTH WIZARD - Phillips Head' },
-{ id: 'wjsr8ZmaRVA', start: 791, end: 1128, title: 'FILTH WIZARD - Phillips Head' },
 { id: 'TXrevEe3yAA', start: 340, end: 387, title: 'Cuck - ' },
 { id: 'wjsr8ZmaRVA', start: 1, end: 359, title: 'FILTH WIZARD - Chimney Ethics' },
 { id: 'y3-LF-9y1Vw', start: 238, end: 530, title: 'Kylie Price - Dead of Night' },
