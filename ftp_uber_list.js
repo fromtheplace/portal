@@ -286,7 +286,7 @@ const TRACKS = [
   {"id": "XvE0GewwNlI", "title": "TOUGH GUY - 18 Months", "artist": "TOUGH GUY", "song": "18 Months", "genre": "ALT", "start": 22536, "end": 22811},
   {"id": "XvE0GewwNlI", "title": "TOUGH GUY - -", "artist": "TOUGH GUY", "song": "-", "genre": "ALT", "start": 22837, "end": 23172},
   {"id": "XvE0GewwNlI", "title": "TOUGH GUY - Last One", "artist": "TOUGH GUY", "song": "Last One", "genre": "ALT", "start": 23172, "end": 23513},
-  {"id": "XvE0GewwNlI", "title": "RUSSIAN BLUE - MFP 2", "artist": "RUSSIAN BLUE", "song": "MFP 2", "genre": "ALT", "start": 23937, "end": 25200},
+    { id: 'XvE0GewwNlI', "start": 23937, "end": 25200, artist: 'RUSSIAN BLUE', title: 'MFP 2', song: 'MFP 2', genre: 'ALT', thumb: 'russian-blue-mfp-2.jpg' },
   {"id": "XvE0GewwNlI", "title": "ALEX DYKES MFP 2", "artist": "ALEX DYKES MFP 2", "song": "ALEX DYKES MFP 2", "genre": "ALT", "start": 19330, "end": 20459},
   {"id": "XvE0GewwNlI", "title": "MAN RAY - MFP2", "artist": "MAN RAY", "song": "MFP2", "genre": "ALT", "start": 18183, "end": 19138},
   {"id": "7HxENNQql38", "title": "KATHARTIPUSS - Space Concert", "artist": "KATHARTIPUSS", "song": "Space Concert", "genre": "ROCK", "start": 6160, "end": 6160},
