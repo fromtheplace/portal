@@ -2,6 +2,7 @@
 // Auto-updated by PLister v2
 // 2026-03-23 16:10:12
 const TRACKS = [
+   { id: 'HWOwgh6AI5k', "start": 14856, "end": 15855, artist: 'The Slinks', title: '', song: '', genre: 'ROCK', thumb: 'the-slinks.jpg' },
   { id: 'bEzAZik3WLs', "start": 9257, "end": 9562, artist: 'Sun Veins', title: 'Authenticity (Lobofest)', song: 'Authenticity (Lobofest)', genre: 'ROCK', thumb: 'sun-veins.jpg' },
  { id: 'bEzAZik3WLs', "start": 9562, "end": 9734, artist: 'Sun Veins', title: 'Power Song (Lobofest)', song: 'Power Song (Lobofest)', genre: 'ROCK', thumb: 'sun-veins.jpg' },
  { id: 'bEzAZik3WLs', "start": 9741, "end": 10032, artist: 'Sun Veins', title: 'Song #3 (Lobofest)', song: 'Song #3 (Lobofest)', genre: 'ROCK', thumb: 'sun-veinsg.jpg' },
