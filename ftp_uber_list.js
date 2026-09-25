@@ -13,7 +13,7 @@ const TRACKS = [
  
      
      { id: 'bEzAZik3WLs', "start": 13017, "end": 13271, artist: 'Black Sale House', title: 'Place I Want to Be (Lobofest)', song: 'Place I Want to Be (Lobofest)', genre: 'ROCK', thumb: 'bsh.jpg' },
- { id: 'bEzAZik3WLs', "start": 13271, "end": 13626, artist: 'Black Sale House', title: 'Emerald Gaze (Lobofest)', song: 'Emerald Gaze (Lobofest)', genre: 'ROCK', thumb: 'bbsh.jpg' },
+ { id: 'bEzAZik3WLs', "start": 13271, "end": 13626, artist: 'Black Sale House', title: 'Emerald Gaze (Lobofest)', song: 'Emerald Gaze (Lobofest)', genre: 'ROCK', thumb: 'bsh.jpg' },
  { id: 'bEzAZik3WLs', "start": 13626, "end": 13874, artist: 'Black Sale House', title: 'Rabbit (Lobofest)', song: 'Rabbit (Lobofest)', genre: 'ROCK', thumb: 'bsh.jpg' },
  { id: 'bEzAZik3WLs', "start": 13874, "end": 14086, artist: 'Black Sale House', title: 'Self Reflect (Lobofest)', song: 'Self Reflect (Lobofest)', genre: 'ROCK', thumb: 'bsh.jpg' },
  { id: 'bEzAZik3WLs', "start": 14086, "end": 14295, artist: 'Black Sale House', title: 'Princess of Castle Street (Lobofest)', song: 'Princess of Castle Street (Lobofest)', genre: 'ROCK', thumb: 'bsh.jpg' },
