@@ -2,12 +2,11 @@
 // Auto-updated by PLister v2
 // 2026-03-23 16:10:12
 const TRACKS = [
-
-  { id: 'bEzAZik3WLs', start: 532, end: 840, title: 'Catherine KS — Deep Love on the Horizon', artist: '', genre: 'FOLK' },
-{ id: 'bEzAZik3WLs', start: 848, end: 1080, title: 'Catherine KS — Betrayal', artist: '', genre: 'FOLK' },
-{ id: 'bEzAZik3WLs', start: 1087, end: 1385, title: 'Catherine KS — I Broke My Spacesuit', artist: '', genre: 'FOLK' },
-{ id: 'bEzAZik3WLs', start: 1433, end: 1622, title: 'Catherine KS — The Center of the Sun', artist: '', genre: 'FOLK' },
-{ id: 'bEzAZik3WLs', start: 1643, end: 1980, title: 'Catherine KS — The Velveteen Rabbit', artist: '', genre: 'FOLK' },
+ { id: 'bEzAZik3WLs', "start": 532, "end": 840, title: 'Catherine KS', artist: 'Deep Love on the Horizon', genre: 'FOLK' },
+ { id: 'bEzAZik3WLs', "start": 848, "end": 1080, title: 'Catherine KS', artist: 'Betrayal', genre: 'FOLK' },
+ { id: 'bEzAZik3WLs', "start": 1087, "end": 1385, title: 'Catherine KS', artist: 'I Broke My Spacesuit', genre: 'FOLK' },
+ { id: 'bEzAZik3WLs', "start": 1433, "end": 1622, title: 'Catherine KS', artist: 'The Center of the Sun', genre: 'FOLK' },
+ { id: 'bEzAZik3WLs', "start": 1643, "end": 1980, title: 'Catherine KS', artist: 'The Velveteen Rabbit', genre: 'FOLK' },
   { id: 'bEzAZik3WLs', "start": 2477, "end": 4752, title: 'Person Will', artist: 'Lobofest', genre: 'ALT' },
   { id: 'bEzAZik3WLs', "start": 5268, "end": 7144, title: 'Baser & Allen', artist: 'Lobofest', genre: 'folk' },
   { id: 'bEzAZik3WLs', "start": 7791, "end": 8657, title: 'Alan Ned Gray', artist: 'Lobofest', genre: 'folk' },
