@@ -8,7 +8,7 @@ const TRACKS = [
  { id: '6sB8vvA_6rQ', "start": 520, "end": 710, artist: 'Bo and The Constrictors', title: 'Men With Ven', song: 'Men With Ven', genre: 'ROCK', thumb: 'bo-and-the-constrictors-men-with-ven.jpg' },
  { id: '6sB8vvA_6rQ', "start": 677, "end": 900, artist: 'Bo and The Constrictors', title: 'Susie', song: 'Susie', genre: 'ROCK', thumb: 'bo-and-the-constrictors-susie.jpg' },
  { id: '6sB8vvA_6rQ', "start": 900, "end": 1085, artist: 'Bo and The Constrictors', title: 'Say Your Prayers', song: 'Say Your Prayers', genre: 'ROCK', thumb: 'bo-and-the-constrictors-say-your-prayers.jpg' },
- { id: '6sB8vvA_6rQ', "start": 1085, "end": 1375, artist: 'Bo and The Constrictors', title: 'Woo', song: 'Woo', genre: 'ROCK', thumb: 'bo-and-the-constrictors-woo.jpg' },
+ { id: '6sB8vvA_6rQ', "start": 1085, "end": 1375, artist: 'Bo and The Constrictors', title: 'Woo Hoo', song: 'Woo', genre: 'ROCK', thumb: 'bo-and-the-constrictors-woo.jpg' },
  { id: '6sB8vvA_6rQ', "start": 1375, "end": 1593, artist: 'Bo and The Constrictors', title: 'Go For Yourself', song: 'Go For Yourself', genre: 'ROCK', thumb: 'bo-and-the-constrictors-go-for-yourself.jpg' },
  
      
