@@ -3,13 +3,13 @@
 // 2026-03-23 16:10:12
 const TRACKS = [
 
-      { id: '6sB8vvA_6rQ', "start": 0, "end": 252, artist: 'Bo and The Constrictors', title: 'Nobody Knows', song: 'Nobody Knows', genre: 'ROCK', thumb: 'bo-and-the-constrictors-nobody-knows.jpg' },
- { id: '6sB8vvA_6rQ', "start": 252, "end": 530, artist: 'Bo and The Constrictors', title: 'For Claire', song: 'For Claire', genre: 'ROCK', thumb: 'bo-and-the-constrictors-for-claire.jpg' },
- { id: '6sB8vvA_6rQ', "start": 530, "end": 710, artist: 'Bo and The Constrictors', title: 'Men With Ven', song: 'Men With Ven', genre: 'ROCK', thumb: 'bo-and-the-constrictors-men-with-ven.jpg' },
- { id: '6sB8vvA_6rQ', "start": 710, "end": 900, artist: 'Bo and The Constrictors', title: 'Part of the Family', song: 'Part of the Family', genre: 'ROCK', thumb: 'bo-and-the-constrictors-part-of-the-family.jpg' },
+       { id: '6sB8vvA_6rQ', "start": 0, "end": 252, artist: 'Bo and The Constrictors', title: 'Cigarettes & Coffee Stains', song: 'Cigarettes & Coffee Stains', genre: 'ROCK', thumb: 'bo-and-the-constrictors-cigarettes-&-coffee-stains.jpg' },
+ { id: '6sB8vvA_6rQ', "start": 279, "end": 530, artist: 'Bo and The Constrictors', title: 'Love', song: 'Love', genre: 'ROCK', thumb: 'bo-and-the-constrictors-love.jpg' },
+ { id: '6sB8vvA_6rQ', "start": 523, "end": 710, artist: 'Bo and The Constrictors', title: 'Men With Ven', song: 'Men With Ven', genre: 'ROCK', thumb: 'bo-and-the-constrictors-men-with-ven.jpg' },
+ { id: '6sB8vvA_6rQ', "start": 710, "end": 900, artist: 'Bo and The Constrictors', title: 'Susie', song: 'Susie', genre: 'ROCK', thumb: 'bo-and-the-constrictors-susie.jpg' },
  { id: '6sB8vvA_6rQ', "start": 900, "end": 1085, artist: 'Bo and The Constrictors', title: 'Say Your Prayers', song: 'Say Your Prayers', genre: 'ROCK', thumb: 'bo-and-the-constrictors-say-your-prayers.jpg' },
  { id: '6sB8vvA_6rQ', "start": 1085, "end": 1375, artist: 'Bo and The Constrictors', title: 'Woo', song: 'Woo', genre: 'ROCK', thumb: 'bo-and-the-constrictors-woo.jpg' },
- { id: '6sB8vvA_6rQ', "start": 1375, "end": 1585, artist: 'Bo and The Constrictors', title: 'Go For Yourself', song: 'Go For Yourself', genre: 'ROCK', thumb: 'bo-and-the-constrictors-go-for-yourself.jpg' },
+ { id: '6sB8vvA_6rQ', "start": 1375, "end": 1593, artist: 'Bo and The Constrictors', title: 'Go For Yourself', song: 'Go For Yourself', genre: 'ROCK', thumb: 'bo-and-the-constrictors-go-for-yourself.jpg' },
  
      
      { id: 'bEzAZik3WLs', "start": 13017, "end": 13271, artist: 'Black Sale House', title: 'Place I Want to Be (Lobofest)', song: 'Place I Want to Be (Lobofest)', genre: 'ROCK', thumb: 'black-sale-house-place-i-want-to-be.jpg' },
