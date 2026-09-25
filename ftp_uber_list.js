@@ -12,13 +12,13 @@ const TRACKS = [
  { id: '6sB8vvA_6rQ', "start": 1375, "end": 1593, artist: 'Bo and The Constrictors', title: 'Go For Yourself', song: 'Go For Yourself', genre: 'ROCK', thumb: 'bo-and-the-constrictors-go-for-yourself.jpg' },
  
      
-     { id: 'bEzAZik3WLs', "start": 13017, "end": 13271, artist: 'Black Sale House', title: 'Place I Want to Be (Lobofest)', song: 'Place I Want to Be (Lobofest)', genre: 'ROCK', thumb: 'black-sale-house-place-i-want-to-be.jpg' },
- { id: 'bEzAZik3WLs', "start": 13271, "end": 13626, artist: 'Black Sale House', title: 'Emerald Gaze (Lobofest)', song: 'Emerald Gaze (Lobofest)', genre: 'ROCK', thumb: 'black-sale-house-emerald-gaze.jpg' },
- { id: 'bEzAZik3WLs', "start": 13626, "end": 13874, artist: 'Black Sale House', title: 'Rabbit (Lobofest)', song: 'Rabbit (Lobofest)', genre: 'ROCK', thumb: 'black-sale-house-rabbit.jpg' },
- { id: 'bEzAZik3WLs', "start": 13874, "end": 14086, artist: 'Black Sale House', title: 'Self Reflect (Lobofest)', song: 'Self Reflect (Lobofest)', genre: 'ROCK', thumb: 'black-sale-house-self-reflect.jpg' },
- { id: 'bEzAZik3WLs', "start": 14086, "end": 14295, artist: 'Black Sale House', title: 'Princess of Castle Street (Lobofest)', song: 'Princess of Castle Street (Lobofest)', genre: 'ROCK', thumb: 'black-sale-house-princess-of-castle-street.jpg' },
- { id: 'bEzAZik3WLs', "start": 14295, "end": 14568, artist: 'Black Sale House', title: 'Santa Monica’s Sundays (Lobofest)', song: 'Santa Monica’s Sundays (Lobofest)', genre: 'ROCK', thumb: 'black-sale-house-santa-monica’s-sundays.jpg' },
- { id: 'bEzAZik3WLs', "start": 14577, "end": 14794, artist: 'Black Sale House', title: 'Cupid Serum (Lobofest)', song: 'Cupid Serum (Lobofest)', genre: 'ROCK', thumb: 'black-sale-house-cupid-serum.jpg' },
+     { id: 'bEzAZik3WLs', "start": 13017, "end": 13271, artist: 'Black Sale House', title: 'Place I Want to Be (Lobofest)', song: 'Place I Want to Be (Lobofest)', genre: 'ROCK', thumb: 'bsh.jpg' },
+ { id: 'bEzAZik3WLs', "start": 13271, "end": 13626, artist: 'Black Sale House', title: 'Emerald Gaze (Lobofest)', song: 'Emerald Gaze (Lobofest)', genre: 'ROCK', thumb: 'bbsh.jpg' },
+ { id: 'bEzAZik3WLs', "start": 13626, "end": 13874, artist: 'Black Sale House', title: 'Rabbit (Lobofest)', song: 'Rabbit (Lobofest)', genre: 'ROCK', thumb: 'bsh.jpg' },
+ { id: 'bEzAZik3WLs', "start": 13874, "end": 14086, artist: 'Black Sale House', title: 'Self Reflect (Lobofest)', song: 'Self Reflect (Lobofest)', genre: 'ROCK', thumb: 'bsh.jpg' },
+ { id: 'bEzAZik3WLs', "start": 14086, "end": 14295, artist: 'Black Sale House', title: 'Princess of Castle Street (Lobofest)', song: 'Princess of Castle Street (Lobofest)', genre: 'ROCK', thumb: 'bsh.jpg' },
+ { id: 'bEzAZik3WLs', "start": 14295, "end": 14568, artist: 'Black Sale House', title: 'Santa Monica’s Sundays (Lobofest)', song: 'Santa Monica’s Sundays (Lobofest)', genre: 'ROCK', thumb: 'bsh.jpg' },
+ { id: 'bEzAZik3WLs', "start": 14577, "end": 14794, artist: 'Black Sale House', title: 'Cupid Serum (Lobofest)', song: 'Cupid Serum (Lobofest)', genre: 'ROCK', thumb: 'bsh.jpg' },
     
     { id: 'HWOwgh6AI5k', "start": 14870, "end": 15855, artist: 'The Slinks', title: '', song: '', genre: 'ROCK', thumb: 'the-slinks.jpg' },
   { id: 'bEzAZik3WLs', "start": 9257, "end": 9562, artist: 'Sun Veins', title: 'Authenticity (Lobofest)', song: 'Authenticity (Lobofest)', genre: 'ROCK', thumb: 'sun-veins.jpg' },
