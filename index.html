@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>From the Plays — CHanneL Catalogue</title>
+<title>FROM THE PLAYS — FTPtv — Catalogue</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -1492,6 +1492,27 @@ function pad(n){return String(n).padStart(2,'0');}
 function fmtTime(ts){const d=new Date(ts);return`${pad(d.getHours())}:${pad(d.getMinutes())}`;}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function ytThumb(id,q){return`https://i.ytimg.com/vi/${id}/${q||'mqdefault'}.jpg`;}
+// Custom thumbnail support: track.thumb (e.g. 'my-track.jpg') is looked for in /images.
+// If it 404s, or no thumb is set, we fall back to the YouTube thumbnail.
+function thumbSrc(t){return t?.thumb?`images/${t.thumb}`:ytThumb(t?.id);}
+// Generic <img onerror> chain: custom /images file -> YT thumb -> (optional) hide + show fb element.
+function thumbFallback(img,id,fbSelector){
+  if(!img.dataset.stage){
+    img.dataset.stage='yt';
+    img.src=ytThumb(id);
+  }else{
+    img.style.display='none';
+    if(fbSelector){
+      const fb=img.closest('.tile-thumb,.chart-row,.player-thumb-wrap')?.querySelector(fbSelector);
+      if(fb) fb.style.display='flex';
+    }
+  }
+}
+// Player bar has its own 3-stage chain: custom /images file -> YT mqdefault -> YT hqdefault.
+function playerThumbFallback(img,id){
+  if(!img.dataset.stage){ img.dataset.stage='1'; img.src=ytThumb(id); }
+  else if(img.dataset.stage==='1'){ img.dataset.stage='2'; img.src=ytThumb(id,'hqdefault'); }
+}
 function getFiltered(){
   let a=TRACKS.map((t,i)=>({t,i}));
   if(activeGenre!=='ALL') a=a.filter(({t})=>t.genre===activeGenre);
@@ -1671,8 +1692,8 @@ function featTileHTML(track, isPlaying) {
   const col = gc(track.genre);
   return `<div class="feat-tile${isPlaying?' playing':''}" data-idx="${track._idx ?? -1}" data-video-id="${track.id}">
     <div class="tile-thumb">
-      <img class="tile-thumb-img" src="https://i.ytimg.com/vi/${track.id}/mqdefault.jpg"
-           onerror="this.style.display='none'" alt="">
+      <img class="tile-thumb-img" src="${thumbSrc(track)}"
+           onerror="thumbFallback(this,'${track.id}')" alt="">
       <span class="tile-genre" style="background:${col}">${track.genre}</span>
       <div class="tile-np"><div class="tile-np-title">${esc(track.song||track.title)}</div></div>
     </div>
@@ -1733,8 +1754,8 @@ async function buildFeaturedColumn() {
         risingEl.outerHTML = `
           <div class="feat-tile" data-idx="${track._idx}" data-video-id="${track.id}">
             <div class="tile-thumb">
-              <img class="tile-thumb-img" src="https://i.ytimg.com/vi/${track.id}/mqdefault.jpg"
-                   onerror="this.style.display='none'" alt="">
+              <img class="tile-thumb-img" src="${thumbSrc(track)}"
+                   onerror="thumbFallback(this,'${track.id}')" alt="">
               <span class="tile-genre" style="background:${col}">${track.genre}</span>
               <div class="tile-np">
                 <div style="display:block;font-size:0.45rem;color:var(--yellow);letter-spacing:0.2em;
@@ -1809,8 +1830,8 @@ function renderTiles(items){
     const pc=playCounts[i]||0;
     return`<div class="tile${i===currentIdx?' playing':''}" data-idx="${i}" data-genre="${t.genre}">
       <div class="tile-thumb">
-        <img class="tile-thumb-img" src="${ytThumb(t.id)}" loading="lazy" alt=""
-             onerror="this.style.display='none';this.parentElement.querySelector('.tile-thumb-fb').style.display='flex'">
+        <img class="tile-thumb-img" src="${thumbSrc(t)}" loading="lazy" alt=""
+             onerror="thumbFallback(this,'${t.id}','.tile-thumb-fb')">
         <img class="tile-thumb-live" alt="">
         <div class="tile-thumb-fb" style="display:none">${t.genre}</div>
         <span class="tile-genre" style="background:${gc(t.genre)}">${t.genre}</span>
@@ -1943,9 +1964,10 @@ function renderChartRows(allRanked){
   listEl.innerHTML=ranked.map((r,n)=>{
     const momClass=r.momentum==='↑'?'up':r.momentum==='↓'?'down':r.momentum==='NEW'?'new':'same';
     const momGlyph=r.momentum==='↑'?'▲':r.momentum==='↓'?'▼':r.momentum==='NEW'?'★':'—';
+    const chartTrack = TRACKS.find(x=>x.id===r.videoId && x.title===r.title) || TRACKS.find(x=>x.id===r.videoId) || {id:r.videoId};
     return`<div class="chart-row${r.videoId===TRACKS[currentIdx]?.id?' playing':''}" data-video-id="${r.videoId||''}" data-title="${esc(r.title)}">
       <div class="chart-rank ${rankClass(n)}">${n+1}</div>
-      <img class="chart-thumb-sm" src="${ytThumb(r.videoId)}" loading="lazy" alt="" onerror="this.style.display='none'">
+      <img class="chart-thumb-sm" src="${thumbSrc(chartTrack)}" loading="lazy" alt="" onerror="thumbFallback(this,'${r.videoId}')">
       <div class="chart-info">
         <div class="chart-info-title">${esc(r.artist)}</div>
         <div class="chart-info-sub">${esc(r.title)}</div>
@@ -1991,7 +2013,7 @@ function playTrack(idx){
 
   // Player bar
   const wrap=document.getElementById('player-thumb-wrap');
-  wrap.innerHTML=`<img class="player-thumb-img" src="${ytThumb(t.id)}" onerror="this.src='${ytThumb(t.id,'hqdefault')}'" alt="">`;
+  wrap.innerHTML=`<img class="player-thumb-img" src="${thumbSrc(t)}" onerror="playerThumbFallback(this,'${t.id}')" alt="">`;
   document.getElementById('player-title').innerHTML=`<span class="player-genre-pip" style="background:${gc(t.genre)}"></span>${esc(t.title)}`;
   document.getElementById('player-artist').textContent=t.artist;
   document.getElementById('prog-dur').textContent=fmtDur(Math.max(0,t.end-t.start));
