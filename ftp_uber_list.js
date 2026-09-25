@@ -2,6 +2,13 @@
 // Auto-updated by PLister v2
 // 2026-03-23 16:10:12
 const TRACKS = [
+  { id: 'bEzAZik3WLs', "start": 9257, "end": 9562, artist: 'Sun Veins', title: 'Authenticity (Lobofest)', song: 'Authenticity (Lobofest)', genre: 'ROCK', thumb: 'sun-veins-authenticity.jpg' },
+ { id: 'bEzAZik3WLs', "start": 9562, "end": 9734, artist: 'Sun Veins', title: 'Power Song (Lobofest)', song: 'Power Song (Lobofest)', genre: 'ROCK', thumb: 'sun-veins-power-song.jpg' },
+ { id: 'bEzAZik3WLs', "start": 9741, "end": 10032, artist: 'Sun Veins', title: 'Song #3 (Lobofest)', song: 'Song #3 (Lobofest)', genre: 'ROCK', thumb: 'sun-veins-song-#3.jpg' },
+ { id: 'bEzAZik3WLs', "start": 10032, "end": 10216, artist: 'Sun Veins', title: 'Song #4 (Lobofest)', song: 'Song #4 (Lobofest)', genre: 'ROCK', thumb: 'sun-veins-song-#4.jpg' },
+ { id: 'bEzAZik3WLs', "start": 10216, "end": 10402, artist: 'Sun Veins', title: 'These Days (Lobofest)', song: 'These Days (Lobofest)', genre: 'ROCK', thumb: 'sun-veins-these-days.jpg' },
+ { id: 'bEzAZik3WLs', "start": 10409, "end": 10641, artist: 'Sun Veins', title: 'Still Waiting (Lobofest)', song: 'Still Waiting (Lobofest)', genre: 'ROCK', thumb: 'sun-veins-still-waiting.jpg' },
+ 
  { id: 'bEzAZik3WLs', "start": 532, "end": 840, artist: 'Catherine KS', title: 'Deep Love on the Horizon', song: 'Deep Love on the Horizon', genre: 'FOLK' },
  { id: 'bEzAZik3WLs', "start": 848, "end": 1080, artist: 'Catherine KS', title: 'Betrayal', song: 'Betrayal', genre: 'FOLK' },
  { id: 'bEzAZik3WLs', "start": 1087, "end": 1385, artist: 'Catherine KS', title: 'I Broke My Spacesuit', song: 'I Broke My Spacesuit', genre: 'FOLK' },
