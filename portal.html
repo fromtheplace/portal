@@ -1153,6 +1153,8 @@ let isMuted          = true;
 let lastVolume       = 80;
 let clipEndAt        = 0;      // absolute source-video second where the current clip should stop
 let clipWatcher      = null;   // polls playback position — endSeconds alone isn't reliable
+let pendingSeek      = null;   // seek target — applied in CUED → BUFFERING → PLAYING sequence
+let advancing        = false;  // guard against double-advance (watcher + ENDED firing together)
 
 // ── Boot the YouTube IFrame API ──────────────────────────────────────
 (function loadYTAPI() {
@@ -1171,21 +1173,45 @@ window.onYouTubeIframeAPIReady = function () {
     events: {
       onReady: () => {
         playerReady = true;
+        applyMuteState();
         if (pendingLoad) {
-          ytPlayer.loadVideoById({ videoId: pendingLoad.videoId, startSeconds: pendingLoad.seek });
-          currentVideoId = pendingLoad.videoId;
-          clipEndAt = pendingLoad.endAt || 0;
+          const { videoId, seek, endAt } = pendingLoad;
           pendingLoad = null;
-          applyMuteState();
-          startClipWatcher();
+          loadIntoPlayer(videoId, seek, endAt);
         }
       },
+      // Same CUED → seekTo → playVideo sequence as the standalone channel
+      // players, for the same reason: loadVideoById autoplays immediately
+      // and getCurrentTime() can briefly still report the PREVIOUS track's
+      // position while the new one is loading. Starting the end-of-clip
+      // watcher against that stale value is what caused the random
+      // mid-song jumps — so the watcher now only starts once PLAYING
+      // actually confirms the seek has taken effect.
       onStateChange: (e) => {
-        if (e.data === YT.PlayerState.PLAYING) statusEl.classList.add('gone');
-        // Natural end of the underlying source video itself (rare — this
-        // is a real fallback, not the normal path; see startClipWatcher
-        // for how a clip's own boundary, mid-video, actually gets enforced)
-        if (e.data === YT.PlayerState.ENDED) continueChannel();
+        const S = YT.PlayerState;
+        if (e.data === S.CUED) {
+          if (pendingSeek !== null) { ytPlayer.seekTo(pendingSeek, true); pendingSeek = null; }
+          ytPlayer.playVideo();
+        } else if (e.data === S.BUFFERING) {
+          // second-chance seek, in case CUED fired before seekTo registered
+          if (pendingSeek !== null) { ytPlayer.seekTo(pendingSeek, true); pendingSeek = null; }
+        } else if (e.data === S.PLAYING) {
+          // third-chance seek — last resort if both CUED and BUFFERING missed
+          if (pendingSeek !== null) {
+            const target = pendingSeek;
+            pendingSeek = null;
+            if (Math.abs(ytPlayer.getCurrentTime() - target) > 2) ytPlayer.seekTo(target, true);
+          }
+          statusEl.classList.add('gone');
+          startClipWatcher(); // only now — position is confirmed correct
+        } else if (e.data === S.PAUSED) {
+          clearInterval(clipWatcher);
+        } else if (e.data === S.ENDED) {
+          // Natural end of the underlying source video itself (rare — a
+          // real fallback, not the normal path; startClipWatcher is what
+          // enforces a clip's own boundary mid-video)
+          continueChannel();
+        }
       },
       onError: () => continueChannel(),
     },
@@ -1193,18 +1219,25 @@ window.onYouTubeIframeAPIReady = function () {
 };
 
 // ── Load a resolved video into the player ────────────────────────────
+// Mirrors the standalone channel players: cueVideoById (not loadVideoById)
+// registers the video without starting playback, so we can seekTo() the
+// exact position before anything plays — loadVideoById on iOS is known to
+// ignore startSeconds for large offsets (e.g. a chapter 20+ minutes into
+// a shared recording), which cueVideoById + explicit seekTo sidesteps.
 function loadIntoPlayer(videoId, seek, endAt) {
   if (!videoId) return;
   currentVideoId = videoId;
   clipEndAt = endAt || 0;
+  advancing = false;
+  clearInterval(clipWatcher);
+  const startAt = Math.max(0, Math.floor(seek || 0));
+  pendingSeek = startAt;
   if (!playerReady) { pendingLoad = { videoId, seek, endAt }; return; }
-  ytPlayer.loadVideoById({
+  ytPlayer.cueVideoById({
     videoId,
-    startSeconds: Math.max(0, Math.floor(seek || 0)),
-    endSeconds:   endAt || undefined, // a hint only — unreliable on mobile, hence the watcher below
+    startSeconds: startAt, // a hint — not reliable alone, hence pendingSeek above
+    endSeconds:   endAt || undefined,
   });
-  applyMuteState();
-  startClipWatcher();
 }
 
 // A track's start/end are chapter boundaries inside one shared source
@@ -1216,9 +1249,10 @@ function startClipWatcher() {
   clearInterval(clipWatcher);
   if (!clipEndAt) return;
   clipWatcher = setInterval(() => {
-    if (!playerReady || !ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
+    if (!playerReady || !ytPlayer || advancing || typeof ytPlayer.getCurrentTime !== 'function') return;
     const cur = ytPlayer.getCurrentTime();
     if (cur >= clipEndAt - 0.5) {
+      advancing = true;
       clearInterval(clipWatcher);
       continueChannel();
     }
